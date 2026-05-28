@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PixelPaw SOC</title>
+  <link rel="stylesheet" href="tokens.css" />
+  <link rel="stylesheet" href="base.css" />
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="header-start">
+        <div class="header-mascot" aria-hidden="true">
+        <div class="Character Character--mark">
+          <img class="Character_shadow pixelart" src="assets/pixel/DemoRpgCharacterShadow.png" alt="Shadow" />
+          <img class="Character_spritesheet pixelart face-down" src="assets/pixel/DemoRpgCharacter.png" alt="Character" />
+        </div>
+        <div id="mascot-bubble" class="mascot-bubble"></div>
+      </div>
+      <div class="brand-copy">
+          <h1 class="title">
+            <span class="title-brand">PixelPaw</span>
+            <span class="title-badge">SOC</span>
+          </h1>
+          <p id="conn-status" class="conn-status" hidden aria-live="polite"></p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button
+          type="button"
+          id="btn-lang-toggle"
+          class="btn-icon btn-lang-toggle"
+          aria-label="Language"
+          data-i18n-title="language"
+        >
+          <span id="lang-toggle-label" class="lang-toggle-label" aria-hidden="true">EN</span>
+        </button>
+        <button
+          type="button"
+          id="btn-theme-toggle"
+          class="btn-icon btn-theme-toggle"
+          aria-pressed="false"
+        >
+          <span class="theme-icon-sun" aria-hidden="true">&#9728;</span>
+          <span class="theme-icon-moon" aria-hidden="true" hidden>&#9789;</span>
+        </button>
+        <button type="button" id="btn-options" class="btn-icon" data-i18n-title="openSettings">&#9881;</button>
+      </div>
+    </header>
+
+    <nav class="tab-nav soc-segments" aria-label="Popup sections">
+      <button type="button" id="tab-scan" class="tab-btn soc-seg is-active" data-tab="scan" aria-pressed="true">
+        <span class="tab-btn-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3l7 3v6c0 4.4-2.7 7.4-7 9-4.3-1.6-7-4.6-7-9V6l7-3z"></path>
+            <path d="M9 12.3l2 2 4-4.2"></path>
+          </svg>
+        </span>
+        <span data-i18n="tabScan">Scan</span>
+      </button>
+      <button type="button" id="tab-news" class="tab-btn soc-seg" data-tab="news" aria-pressed="false">
+        <span class="tab-btn-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H19v14.5A1.5 1.5 0 0 1 17.5 20H6a2 2 0 0 1-2-2V5.5z"></path>
+            <path d="M8 9h7"></path>
+            <path d="M8 12h8"></path>
+            <path d="M8 15h5"></path>
+          </svg>
+        </span>
+        <span data-i18n="tabNews">News</span>
+      </button>
+      <button type="button" id="tab-usom" class="tab-btn soc-seg" data-tab="usom" aria-pressed="false">
+        <span class="tab-btn-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2l8 4.5V12c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10V6.5L12 2z"></path>
+            <path d="M9.5 11.8l1.8 1.8 3.2-3.2"></path>
+          </svg>
+        </span>
+        <span data-i18n="tabUsom">USOM</span>
+      </button>
+    </nav>
+
+    <section id="panel-scan" class="tab-panel">
+    <section class="panel">
+      <div id="input-surface-card" class="input-surface-card soc-surface" data-scan-input-expanded="true">
+        <button
+          type="button"
+          id="btn-scan-input-expand"
+          class="scan-input-compact"
+          hidden
+          aria-controls="ioc-input"
+          aria-expanded="false"
+        >
+          <span class="scan-input-surface-icon scan-input-compact-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3l7 3v6c0 4.4-2.7 7.4-7 9-4.3-1.6-7-4.6-7-9V6l7-3z"></path>
+              <path d="M9 12.3l2 2 4-4.2"></path>
+            </svg>
+          </span>
+          <span class="scan-input-surface-copy scan-input-compact-copy">
+            <span class="scan-input-surface-label scan-input-compact-label" data-i18n="scanCompactLabel">New lookup</span>
+            <span class="scan-input-compact-preview is-empty" id="scan-compact-preview"></span>
+          </span>
+          <span class="scan-input-compact-chevron" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 9l6 6 6-6"></path>
+            </svg>
+          </span>
+        </button>
+        <div class="scan-input-body">
+        <div class="scan-input-surface-head">
+          <span class="scan-input-surface-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3l7 3v6c0 4.4-2.7 7.4-7 9-4.3-1.6-7-4.6-7-9V6l7-3z"></path>
+              <path d="M9 12.3l2 2 4-4.2"></path>
+            </svg>
+          </span>
+          <div class="scan-input-surface-copy">
+            <span class="scan-input-surface-label" data-i18n="scanExpandedLabel">Lookup</span>
+            <span class="scan-input-surface-hint" data-i18n="scanExpandedHint">IP, hash, domain, or URL — one per line</span>
+          </div>
+        </div>
+        <label class="sr-only" for="ioc-input" data-i18n="iocLabel">IoCs (one per line)</label>
+        <textarea
+          id="ioc-input"
+          class="ioc-textarea"
+          aria-busy="false"
+          rows="4"
+          data-i18n-placeholder="iocPlaceholder"
+          placeholder="Enter IP, hash, domain, or URL — one per line for batch"
+          spellcheck="false"
+          autocomplete="off"
+        ></textarea>
+        <div class="scan-presets" role="group" aria-labelledby="scan-presets-title">
+          <span id="scan-presets-title" class="scan-presets-title" data-i18n="scanPresetTitleShort">Preset</span>
+          <div class="scan-preset-segments soc-segments">
+            <button
+              type="button"
+              id="preset-quick"
+              class="scan-preset-seg soc-seg"
+              data-preset="quick"
+              data-i18n="scanPresetQuickShort"
+              data-i18n-title="scanPresetQuick"
+              aria-pressed="false"
+            >Quick</button>
+            <button
+              type="button"
+              id="preset-detailed"
+              class="scan-preset-seg soc-seg"
+              data-preset="detailed"
+              data-i18n="scanPresetDetailedShort"
+              data-i18n-title="scanPresetDetailed"
+              aria-pressed="false"
+            >Detail</button>
+            <button
+              type="button"
+              id="preset-analyst"
+              class="scan-preset-seg soc-seg"
+              data-preset="analyst"
+              data-i18n="scanPresetAnalystShort"
+              data-i18n-title="scanPresetAnalyst"
+              aria-pressed="false"
+            >Analyst</button>
+          </div>
+          <p id="scan-quota-hint" class="scan-quota-hint" hidden aria-live="polite"></p>
+        </div>
+        <input
+          type="file"
+          id="file-ioc-list"
+          class="sr-only"
+          accept=".csv,.txt,.tsv,text/csv,text/plain"
+          aria-hidden="true"
+        />
+
+        <div class="scan-actions">
+          <button type="button" id="btn-scan" class="btn btn-primary btn-scan-main" data-i18n="scan">Scan</button>
+          <button type="button" id="btn-file-action" class="btn btn-secondary btn-small btn-file-action" data-mode="load" data-i18n="loadFromFile" data-i18n-title="loadFromFileTitle">Load from file</button>
+          <span id="queue-badge" class="queue-badge" hidden></span>
+        </div>
+        <p class="kbd-hint" data-i18n="kbdScan">Ctrl+Enter to scan</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="result-wrap" class="result-wrap" hidden role="region" aria-labelledby="result-region-label">
+      <span id="result-region-label" class="sr-only" data-i18n="resultRegionLabel">Scan result</span>
+      <p id="result-live-announce" class="sr-only" aria-live="polite" aria-atomic="true"></p>
+      <section id="batch-wrap" class="batch-wrap" hidden>
+        <div class="batch-head">
+          <div class="batch-head-top">
+            <span id="batch-progress-label" class="batch-progress-label"></span>
+            <button
+              type="button"
+              id="btn-batch-download"
+              class="btn btn-secondary btn-small batch-download-btn"
+              data-i18n="downloadResultsCsv"
+              hidden
+            >
+              Download results CSV
+            </button>
+          </div>
+          <div class="batch-bar" aria-hidden="true"><div id="batch-bar-fill" class="batch-bar-fill"></div></div>
+        </div>
+        <ul id="batch-lines" class="batch-lines scroll-area" role="list"></ul>
+      </section>
+      <article id="result-card" class="result-card soc-surface" data-level="neutral">
+        <div class="result-card-top">
+          <div class="result-surface-head">
+            <span class="scan-input-surface-icon result-surface-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19V5"></path>
+                <path d="M4 19h16"></path>
+                <path d="M8 17V11"></path>
+                <path d="M12 17V7"></path>
+                <path d="M16 17v-4"></path>
+              </svg>
+            </span>
+            <div class="scan-input-surface-copy result-surface-copy">
+              <span class="scan-input-surface-label" data-i18n="resultSurfaceLabel">Result</span>
+            </div>
+            <button
+              type="button"
+              id="btn-result-close"
+              class="result-surface-close"
+              data-i18n-title="closeResult"
+              aria-label="Close result"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="result-hero-body">
+            <p class="result-ioc" id="result-ioc"></p>
+            <div class="result-hero-meta">
+              <span class="result-kind" id="result-kind"></span>
+              <span class="result-meta-sep" aria-hidden="true">·</span>
+              <span class="result-verdict" id="result-verdict"></span>
+              <span class="result-meta-sep result-rep-sep" id="result-rep-sep" aria-hidden="true" hidden>·</span>
+              <span class="result-reputation" id="result-reputation" hidden></span>
+            </div>
+            <p id="result-hero-subline" class="result-hero-subline" hidden></p>
+            <div id="result-hero-tags" class="result-hero-tags" hidden></div>
+            <div id="result-hero-chips" class="result-hero-chips" hidden></div>
+          </div>
+          <div id="result-threat-dashboard" class="result-threat-dashboard" hidden>
+            <section
+              class="result-threat-card result-threat-card--vt"
+              aria-labelledby="result-vt-heading"
+            >
+              <header class="result-threat-card-head" id="result-vt-heading">
+                <div class="result-provider-brand">
+                  <span class="result-provider-logo result-provider-logo--vt" aria-hidden="true">VT</span>
+                  <span class="result-provider-title" data-i18n="resultVtProvider">VirusTotal</span>
+                </div>
+                <span id="result-vt-pill" class="result-provider-pill" hidden></span>
+              </header>
+              <div id="result-chart" class="result-chart" hidden>
+                <p class="result-chart-caption" data-i18n="resultVtEnginesCaption">Engine detections</p>
+                <div class="result-chart-meta">
+                  <span class="result-chart-ratio" id="result-chart-ratio" aria-live="polite"></span>
+                </div>
+                <div
+                  id="result-chart-bar"
+                  class="result-chart-bar"
+                  role="progressbar"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  aria-valuenow="0"
+                ></div>
+                <p id="result-chart-legend" class="result-chart-legend" aria-hidden="true"></p>
+              </div>
+              <p id="result-vt-empty" class="result-threat-empty" hidden data-i18n="resultVtNoStats">No engine stats returned.</p>
+            </section>
+            <section
+              id="result-abuse-card"
+              class="result-threat-card result-threat-card--abuse"
+              hidden
+              aria-labelledby="result-abuse-heading"
+            >
+              <header class="result-threat-card-head" id="result-abuse-heading">
+                <div class="result-provider-brand">
+                  <span class="result-provider-logo result-provider-logo--abuse" aria-hidden="true">ABU</span>
+                  <span class="result-provider-title" data-i18n="abuseBlockTitle">AbuseIPDB</span>
+                </div>
+                <span id="result-abuse-pill" class="result-provider-pill" hidden></span>
+              </header>
+              <div id="result-abuse-wrap" class="result-abuse-inner">
+                <div id="result-abuse-block" class="result-abuse-block"></div>
+              </div>
+            </section>
+          </div>
+        </div>
+        <div id="result-card-body" class="result-card-body scroll-area">
+          <details id="result-engine-details" class="result-collapsible" hidden open>
+            <summary class="result-collapsible-summary">
+              <span data-i18n="threatContextHeading">Threat context</span>
+            </summary>
+            <div id="result-engine-block" class="result-extra-block">
+              <div id="result-engine-summary" class="result-engine-summary result-extra-summary"></div>
+              <ul id="result-engine-list" class="result-extra-list"></ul>
+            </div>
+          </details>
+          <details id="result-details-collapsible" class="result-collapsible" hidden open>
+            <summary class="result-collapsible-summary">
+              <span data-i18n="resultDetailsHeading">Details</span>
+            </summary>
+            <div id="result-details-block" class="result-details-block">
+              <div id="result-details" class="result-details"></div>
+            </div>
+          </details>
+          <details id="result-rel-details" class="result-collapsible" hidden open>
+            <summary class="result-collapsible-summary">
+              <span data-i18n="relationshipPreviewHeading">Relationship preview</span>
+            </summary>
+            <div id="result-rel-block" class="result-extra-block">
+              <p id="result-rel-caption" class="result-extra-summary"></p>
+              <p id="result-rel-error" class="result-extra-error" hidden></p>
+              <ul id="result-rel-list" class="result-extra-list"></ul>
+            </div>
+          </details>
+          <details id="result-mitre-details" class="result-collapsible" hidden open>
+            <summary class="result-collapsible-summary">
+              <span data-i18n="mitreHeading">MITRE ATT&amp;CK (sandbox)</span>
+            </summary>
+            <div id="result-mitre-block" class="result-extra-block">
+              <p id="result-mitre-error" class="result-extra-error" hidden></p>
+              <p id="result-mitre-meta" class="result-extra-summary"></p>
+              <ul id="result-mitre-list" class="result-extra-list mitre-tags"></ul>
+            </div>
+          </details>
+        </div>
+        <div class="result-card-footer">
+          <div class="result-actions">
+            <a
+              id="result-link"
+              class="result-foot-link result-foot-link--primary"
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              data-i18n="openReport"
+              >Open full VirusTotal report</a
+            >
+            <span class="result-actions-sep" aria-hidden="true">·</span>
+            <button type="button" id="btn-copy-summary" class="result-foot-link result-foot-link--copy">
+              <span class="result-foot-link-icon" aria-hidden="true">⧉</span>
+              <span data-i18n="copySummary">Copy summary</span>
+            </button>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <p id="error-msg" class="error" role="alert" hidden></p>
+
+    <div id="copy-toast" class="copy-toast" role="status" aria-live="polite" hidden></div>
+
+    <section class="recent-section" aria-labelledby="recent-title">
+      <div class="recent-head">
+        <h2 id="recent-title" class="recent-title" data-i18n="recent">Recent</h2>
+        <button type="button" id="btn-clear-recent" class="btn btn-ghost btn-tiny" data-i18n-title="clearRecentTitle" data-i18n="clearRecent">Clear</button>
+      </div>
+      <div class="recent-tabs soc-segments" role="tablist" aria-label="Recent views">
+        <button type="button" id="recent-tab-general" class="recent-tab soc-seg is-active" data-tab="general" data-i18n="recentTabGeneral">General</button>
+        <button type="button" id="recent-tab-batch" class="recent-tab soc-seg" data-tab="batch" data-i18n="recentTabFileScans">File scans</button>
+      </div>
+      <div id="recent-panel-general" class="recent-block">
+        <ul id="recent-list" class="recent-list scroll-area"></ul>
+        <p id="recent-empty" class="recent-empty" data-i18n="recentEmpty">No lookups yet.</p>
+      </div>
+      <div id="recent-panel-batch" class="recent-block recent-block-batch" hidden>
+        <ul id="batch-history-list" class="recent-list scroll-area"></ul>
+        <p id="batch-history-empty" class="recent-empty" data-i18n="emptyFileScans">No file scans yet.</p>
+      </div>
+    </section>
+
+    <p id="no-key-hint" class="hint" hidden>
+      <span data-i18n="noApiKey">No API key configured.</span>
+      <button type="button" id="btn-options-inline" class="linkish" data-i18n="openSettingsLink">Open settings</button>
+    </p>
+    </section>
+
+    <section id="panel-news" class="tab-panel" hidden>
+      <section class="news-panel soc-surface">
+        <div class="news-head">
+          <div class="news-actions">
+            <input
+              type="search"
+              id="news-search"
+              class="news-search"
+              data-i18n-placeholder="newsSearchPlaceholder"
+              placeholder="Search news..."
+              aria-label="Search news"
+            />
+            <select id="news-source-filter" class="news-source-filter" aria-label="News source filter">
+              <option value="all" data-i18n="newsSourceAll">All sources</option>
+            </select>
+            <button
+              type="button"
+              id="btn-news-refresh"
+              class="btn-icon news-refresh-icon"
+              data-i18n-title="newsRefresh"
+              aria-label="Refresh news"
+            >
+              <span aria-hidden="true">&#8635;</span>
+            </button>
+          </div>
+        </div>
+        <p id="news-updated-at" class="news-updated-at"></p>
+        <p id="news-status" class="news-status" hidden></p>
+        <ul id="news-list" class="news-list scroll-area"></ul>
+        <p id="news-empty" class="news-empty" data-i18n="newsEmpty" hidden>No news available.</p>
+      </section>
+    </section>
+
+    <section id="panel-usom" class="tab-panel" hidden>
+      <section class="usom-panel soc-surface" aria-labelledby="usom-panel-title">
+        <div class="usom-head">
+          <h2 id="usom-panel-title" class="usom-panel-title" data-i18n="usomPanelTitle">USOM alerts</h2>
+          <div class="usom-actions">
+            <input
+              type="search"
+              id="usom-search"
+              class="usom-search"
+              data-i18n-placeholder="usomSearchPlaceholder"
+              placeholder="Search USOM alerts..."
+              aria-label="Search USOM alerts"
+            />
+            <button
+              type="button"
+              id="btn-usom-refresh"
+              class="btn-icon usom-refresh-icon"
+              data-i18n-title="usomRefresh"
+              aria-label="Refresh USOM alerts"
+            >
+              <span aria-hidden="true">&#8635;</span>
+            </button>
+          </div>
+        </div>
+        <p id="usom-updated-at" class="usom-updated-at"></p>
+        <p id="usom-status" class="usom-status" hidden></p>
+        <ul id="usom-list" class="usom-list scroll-area"></ul>
+        <p id="usom-empty" class="usom-empty" data-i18n="usomEmpty" hidden>No alerts available.</p>
+      </section>
+    </section>
+  </div>
+  <script src="utils.js"></script>
+  <script src="i18n.js"></script>
+  <script src="mascot-bubbles.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PixelPaw SOC — Settings</title>
+  <link rel="stylesheet" href="tokens.css" />
+  <link rel="stylesheet" href="base.css" />
+  <link rel="stylesheet" href="options.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4Z" />
+            <path d="m9 12 2 2 4-4" />
+          </svg>
+        </span>
+        <div class="brand-text">
+          <span class="brand-title" data-i18n="popupTitle">PixelPaw SOC</span>
+          <span class="brand-sub" data-i18n="optSettingsDocTitle">Settings</span>
+        </div>
+      </div>
+      <form id="lang-form" class="lang-form" autocomplete="off">
+        <label class="lang-field" for="ui-lang">
+          <span class="lang-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+            </svg>
+          </span>
+          <select id="ui-lang" class="ui-lang-select" aria-label="Interface language">
+            <option value="en">English</option>
+            <option value="tr">Türkçe</option>
+          </select>
+        </label>
+      </form>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="section section-analytics" aria-labelledby="title-analytics">
+      <div class="section-head">
+        <h1 id="title-analytics" class="section-title" data-i18n="optAnalyticsTitle">Analytics</h1>
+        <p class="section-sub" data-i18n="optAnalyticsSub">Insights derived from your local scan history.</p>
+      </div>
+
+      <div class="kpi-grid">
+        <article class="kpi-card kpi-total">
+          <div class="kpi-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12h4l3-9 4 18 3-9h4" />
+            </svg>
+          </div>
+          <div class="kpi-body">
+            <span class="kpi-label" data-i18n="optKpiTotal">Total scans</span>
+            <strong id="kpi-total" class="kpi-value" aria-live="polite">0</strong>
+            <span id="kpi-total-sub" class="kpi-trend" data-i18n="optKpiTotalSub">across recent + batches</span>
+          </div>
+        </article>
+        <article class="kpi-card kpi-mal">
+          <div class="kpi-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2 2 7v6c0 5 4 9 10 9s10-4 10-9V7l-10-5Z" />
+              <path d="m9 9 6 6M15 9l-6 6" />
+            </svg>
+          </div>
+          <div class="kpi-body">
+            <span class="kpi-label" data-i18n="optKpiMalicious">Malicious</span>
+            <strong id="kpi-mal" class="kpi-value" aria-live="polite">0</strong>
+            <span id="kpi-mal-sub" class="kpi-trend" data-i18n="optKpiMalSub">flagged as malicious</span>
+          </div>
+        </article>
+        <article class="kpi-card kpi-susp">
+          <div class="kpi-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+              <path d="M12 9v4M12 17h.01" />
+            </svg>
+          </div>
+          <div class="kpi-body">
+            <span class="kpi-label" data-i18n="optKpiSuspicious">Suspicious</span>
+            <strong id="kpi-susp" class="kpi-value" aria-live="polite">0</strong>
+            <span id="kpi-susp-sub" class="kpi-trend" data-i18n="optKpiSuspSub">flagged as suspicious</span>
+          </div>
+        </article>
+        <article class="kpi-card kpi-kind">
+          <div class="kpi-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z" />
+            </svg>
+          </div>
+          <div class="kpi-body">
+            <span class="kpi-label" data-i18n="optKpiTopKind">Top IoC type</span>
+            <strong id="kpi-kind" class="kpi-value" aria-live="polite">—</strong>
+            <span id="kpi-kind-sub" class="kpi-trend" data-i18n="optKpiTopKindSub">most frequent in history</span>
+          </div>
+        </article>
+        <article class="kpi-card kpi-abuse">
+          <div class="kpi-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
+            </svg>
+          </div>
+          <div class="kpi-body">
+            <span class="kpi-label" data-i18n="optKpiAbuseLookups">AbuseIPDB (IP)</span>
+            <strong id="kpi-abuse-lookups" class="kpi-value" aria-live="polite">0</strong>
+            <span id="kpi-abuse-sub" class="kpi-trend" data-i18n="optKpiAbuseSub">high / elevated scores</span>
+          </div>
+        </article>
+      </div>
+
+      <div class="charts-grid">
+        <article class="chart-card chart-donut">
+          <header class="chart-head">
+            <h2 class="chart-title" data-i18n="optChartThreats">Threat distribution</h2>
+            <p class="chart-sub" data-i18n="optChartThreatsSub">Malicious / suspicious / clean across history.</p>
+            <div class="chart-meta">
+              <span id="chart-donut-meta" class="chart-chip">—</span>
+            </div>
+          </header>
+          <div class="chart-body chart-body-donut">
+            <svg id="chart-donut" class="chart-svg" viewBox="0 0 200 200" aria-hidden="true" aria-busy="false"></svg>
+            <ul id="chart-donut-legend" class="chart-legend" role="list"></ul>
+          </div>
+        </article>
+
+        <article class="chart-card chart-timeline">
+          <header class="chart-head">
+            <h2 class="chart-title" data-i18n="optChartActivity">Activity (last 14 days)</h2>
+            <p class="chart-sub" data-i18n="optChartActivitySub">Daily scan volume from your local history.</p>
+            <div class="chart-meta">
+              <span id="chart-timeline-meta" class="chart-chip">—</span>
+            </div>
+          </header>
+          <div class="chart-body">
+            <div id="chart-timeline" class="chart-canvas chart-canvas-timeline" aria-hidden="true" aria-busy="false"></div>
+          </div>
+        </article>
+
+        <article class="chart-card chart-bars">
+          <header class="chart-head">
+            <h2 class="chart-title" data-i18n="optChartKind">By IoC type</h2>
+            <p class="chart-sub" data-i18n="optChartKindSub">How your scans are split between IPs, domains, URLs, and files.</p>
+            <div class="chart-meta">
+              <span id="chart-bars-meta" class="chart-chip">—</span>
+            </div>
+          </header>
+          <div class="chart-body">
+            <div id="chart-bars" class="chart-canvas chart-canvas-bars" aria-hidden="true" aria-busy="false"></div>
+          </div>
+        </article>
+
+        <article class="chart-card chart-batch">
+          <header class="chart-head">
+            <h2 class="chart-title" data-i18n="optChartBatch">Latest batch</h2>
+            <p id="chart-batch-meta" class="chart-sub" data-i18n="optChartBatchEmpty" aria-live="polite">No batch run yet.</p>
+            <div class="chart-meta">
+              <span id="chart-batch-stat" class="chart-chip">—</span>
+            </div>
+          </header>
+          <div class="chart-body chart-body-batch">
+            <svg id="chart-batch" class="chart-svg" viewBox="0 0 360 56" aria-hidden="true" aria-busy="false"></svg>
+            <ul id="chart-batch-legend" class="chart-legend chart-legend-row" role="list"></ul>
+          </div>
+        </article>
+      </div>
+
+    </section>
+
+    <section class="section section-settings" aria-labelledby="title-settings-section">
+      <div class="section-head">
+        <h1 id="title-settings-section" class="section-title" data-i18n="optSectionSettings">Settings</h1>
+        <p class="section-sub" data-i18n="optSectionSettingsSub">Configure your VirusTotal connection, scan behavior, and data.</p>
+      </div>
+
+      <div class="settings-grid">
+        <section class="card glass card-api" aria-labelledby="title-api">
+          <div class="card-head">
+            <h2 id="title-api" data-i18n="optApiTitle">API settings</h2>
+            <p class="sub" data-i18n="optApiCombinedSub">Store API keys locally. Keys are only sent to VirusTotal or AbuseIPDB when you run a lookup.</p>
+          </div>
+          <div class="api-provider-stack">
+            <form id="key-form" class="form api-provider-form" autocomplete="off">
+              <h3 class="api-provider-title" data-i18n="optApiVtHeading">VirusTotal</h3>
+              <label class="field">
+                <span class="label" data-i18n="optApiKeyLabel">VirusTotal API key</span>
+                <input type="password" id="api-key" name="apiKey" spellcheck="false" autocomplete="off" data-i18n-placeholder="optApiKeyPlaceholder" placeholder="Paste your API key" />
+              </label>
+              <p class="field-hint" data-i18n="optTestHint">Tests use VirusTotal GET /users (your key as id), not IoC scans.</p>
+              <div class="actions actions-split">
+                <button type="button" id="btn-test-api" class="btn btn-secondary" data-i18n="optTestConnection">Test connection</button>
+                <button type="submit" class="btn btn-primary" data-i18n="optSave">Save</button>
+              </div>
+            </form>
+            <form id="abuse-key-form" class="form api-provider-form" autocomplete="off">
+              <h3 class="api-provider-title" data-i18n="optApiAbuseHeading">AbuseIPDB</h3>
+              <label class="field">
+                <span class="label" data-i18n="optAbuseApiKeyLabel">AbuseIPDB API key</span>
+                <input type="password" id="abuse-api-key" name="abuseApiKey" spellcheck="false" autocomplete="off" data-i18n-placeholder="optAbuseApiKeyPlaceholder" placeholder="Paste your AbuseIPDB API key" />
+              </label>
+              <p class="field-hint" data-i18n="optAbuseTestHint">Tests a lightweight check call (not a full report export).</p>
+              <div class="actions actions-split">
+                <button type="button" id="btn-test-abuse-api" class="btn btn-secondary" data-i18n="optAbuseTestConnection">Test connection</button>
+                <button type="submit" class="btn btn-primary" data-i18n="optSave">Save</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <section class="card glass card-behavior" aria-labelledby="title-behavior">
+          <div class="card-head">
+            <h2 id="title-behavior" data-i18n="optBehaviorTitle">Behavior</h2>
+            <p class="sub" data-i18n="optBehaviorSub">Rate limiting and notifications are applied by the background service worker.</p>
+          </div>
+          <form id="behavior-form" class="form behavior-form">
+            <div class="ui-mode-block">
+              <span id="ui-mode-label" class="label" data-i18n="optUiModeLabel">Open extension as</span>
+              <div class="ui-mode-picker" role="radiogroup" aria-labelledby="ui-mode-label">
+                <label class="ui-mode-tile ui-mode-tile--popup is-selected">
+                  <input type="radio" name="ui-mode" id="ui-mode-popup" value="popup" checked />
+                  <span class="ui-mode-tile-body">
+                    <span class="ui-mode-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="5" y="7" width="14" height="12" rx="2" />
+                        <path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
+                      </svg>
+                    </span>
+                    <span class="ui-mode-title" data-i18n="optUiModePopup">Popup</span>
+                    <span class="ui-mode-desc" data-i18n="optUiModePopupDesc">Toolbar bubble</span>
+                  </span>
+                </label>
+                <label class="ui-mode-tile ui-mode-tile--panel">
+                  <input type="radio" name="ui-mode" id="ui-mode-sidepanel" value="sidepanel" />
+                  <span class="ui-mode-tile-body">
+                    <span class="ui-mode-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="8" height="16" rx="1.5" />
+                        <rect x="13" y="4" width="8" height="16" rx="1.5" opacity="0.45" />
+                      </svg>
+                    </span>
+                    <span class="ui-mode-title" data-i18n="optUiModeSidePanel">Side panel</span>
+                    <span class="ui-mode-desc" data-i18n="optUiModeSidePanelDesc">Pinned sidebar</span>
+                  </span>
+                </label>
+              </div>
+              <p class="field-hint" data-i18n="optUiModeHint">Side panel keeps the UI open beside the page. Requires Chrome 114+. Applies immediately when you choose a mode.</p>
+            </div>
+            <label class="pro-mode-toggle" for="pro-mode">
+              <span class="pro-mode-copy">
+                <span class="pro-mode-title" data-i18n="optProMode">Pro mode (disable API rate limit)</span>
+                <span class="pro-mode-sub" data-i18n="optProModeHint">When enabled, local rate limiting is skipped and requests are sent immediately.</span>
+              </span>
+              <span class="switch" aria-hidden="true">
+                <input type="checkbox" id="pro-mode" />
+                <span class="switch-track">
+                  <span class="switch-thumb"></span>
+                </span>
+              </span>
+            </label>
+            <label class="field">
+              <span class="label" data-i18n="optRateLabel">Minimum interval between VT calls</span>
+              <div class="slider-row">
+                <input type="range" id="rate-interval" min="15" max="20" step="1" value="16" />
+                <span id="rate-interval-label" class="slider-label">16 seconds</span>
+              </div>
+              <p class="field-hint" data-i18n="optRateHint">Default 16s (~4 requests/minute). Adjust if your API tier allows faster pacing.</p>
+            </label>
+            <div class="behavior-switches">
+              <label class="pro-mode-toggle mini-toggle" for="batch-use-abuse">
+                <span class="pro-mode-copy">
+                  <span class="pro-mode-title" data-i18n="optBatchUseAbuse">Enable AbuseIPDB enrichment during batch scans (IP only)</span>
+                </span>
+                <span class="switch" aria-hidden="true">
+                  <input type="checkbox" id="batch-use-abuse" checked />
+                  <span class="switch-track">
+                    <span class="switch-thumb"></span>
+                  </span>
+                </span>
+              </label>
+              <label class="pro-mode-toggle mini-toggle" for="notify-queued">
+                <span class="pro-mode-copy">
+                  <span class="pro-mode-title" data-i18n="optNotifyQueued">Show notification when a request waits on the rate limit queue</span>
+                </span>
+                <span class="switch" aria-hidden="true">
+                  <input type="checkbox" id="notify-queued" checked />
+                  <span class="switch-track">
+                    <span class="switch-thumb"></span>
+                  </span>
+                </span>
+              </label>
+              <label class="pro-mode-toggle mini-toggle" for="notify-news">
+                <span class="pro-mode-copy">
+                  <span class="pro-mode-title" data-i18n="optNotifyNews">Show notification when new RSS items or USOM alerts arrive on automatic refresh</span>
+                </span>
+                <span class="switch" aria-hidden="true">
+                  <input type="checkbox" id="notify-news" checked />
+                  <span class="switch-track">
+                    <span class="switch-thumb"></span>
+                  </span>
+                </span>
+              </label>
+              <label class="pro-mode-toggle mini-toggle" for="notify-context">
+                <span class="pro-mode-copy">
+                  <span class="pro-mode-title" data-i18n="optNotifyContext">Show notification when a context-menu scan finishes (success or error)</span>
+                </span>
+                <span class="switch" aria-hidden="true">
+                  <input type="checkbox" id="notify-context" checked />
+                  <span class="switch-track">
+                    <span class="switch-thumb"></span>
+                  </span>
+                </span>
+              </label>
+            </div>
+            <div class="actions">
+              <button type="submit" class="btn btn-primary" data-i18n="optSaveBehavior">Save behavior</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="card glass card-presets" aria-labelledby="title-scan-presets">
+          <div class="card-head">
+            <h2 id="title-scan-presets" data-i18n="optScanPresetsTitle">Scan presets</h2>
+            <p class="sub" data-i18n="optScanPresetsSub">Configure what each preset enables in Scan.</p>
+            <dl class="preset-abbr-legend">
+              <div class="preset-abbr-item">
+                <dt>REL</dt>
+                <dd data-i18n="optPresetAbbrRel">Primary relationship (+1 VT call)</dd>
+              </div>
+              <div class="preset-abbr-item">
+                <dt>REL+</dt>
+                <dd data-i18n="optPresetAbbrRelPlus">Primary + secondary pivots (+2 VT calls)</dd>
+              </div>
+              <div class="preset-abbr-item">
+                <dt>STD</dt>
+                <dd data-i18n="optPresetAbbrStd">Standard AV labels (max 8, parse only)</dd>
+              </div>
+              <div class="preset-abbr-item">
+                <dt>EXT</dt>
+                <dd data-i18n="optPresetAbbrExt">Extended AV labels (max 20, parse only)</dd>
+              </div>
+              <div class="preset-abbr-item">
+                <dt>ABU</dt>
+                <dd data-i18n="optPresetAbbrAbu">AbuseIPDB for IP: CHK = check only; CHK+30d/90d = check + category reports</dd>
+              </div>
+              <div class="preset-abbr-item">
+                <dt>ABU+</dt>
+                <dd data-i18n="optPresetAbbrAbuseScore">Threat vs visual score tiers (see README)</dd>
+              </div>
+            </dl>
+          </div>
+          <form id="scan-presets-form" class="form preset-cards-form">
+            <div class="preset-cards" role="group" aria-labelledby="title-scan-presets">
+              <article
+                class="preset-card preset-card--quick"
+                aria-labelledby="preset-card-title-quick"
+              >
+                <header class="preset-card-header">
+                  <span class="preset-card-tier preset-card-tier--quick" aria-hidden="true">Ⅰ</span>
+                  <div class="preset-card-intro">
+                    <h3 class="preset-card-title" id="preset-card-title-quick" data-i18n="scanPresetQuick">
+                      Quick mode
+                    </h3>
+                    <p class="preset-card-lead" data-i18n="optPresetRowQuickDesc">
+                      Fast path — core verdicts, minimal enrichment.
+                    </p>
+                  </div>
+                </header>
+                <div class="preset-card-body">
+                  <div
+                    class="preset-ioc-matrix"
+                    data-preset="quick"
+                    role="table"
+                    aria-label="Quick preset by IoC type"
+                  ></div>
+                  <p class="preset-override-note" data-i18n="optPresetOverrideNote">
+                    Checkboxes below apply the same profile to all IoC types when saved.
+                  </p>
+                  <label class="preset-line" for="preset-quick-rel">
+                    <span class="preset-line-copy">
+                      <span class="preset-line-name" data-i18n="optExtraRelPrimary">Related IOCs (primary)</span>
+                      <span class="preset-line-hint" data-i18n="optPresetColRelHint">Resolutions, contacted IPs/domains</span>
+                    </span>
+                    <input type="checkbox" id="preset-quick-rel" class="preset-line-check" />
+                  </label>
+                  <label class="preset-line" for="preset-quick-relsec">
+                    <span class="preset-line-copy">
+                      <span class="preset-line-name" data-i18n="optExtraRelSecondary">Secondary pivots</span>
+                      <span class="preset-line-hint" data-i18n="optPresetColRelSecHint">communicating_files, extra domains</span>
+                    </span>
+                    <input type="checkbox" id="preset-quick-relsec" class="preset-line-check" />
+                  </label>
+                  <label class="preset-line" for="preset-quick-engine">
+                    <span class="preset-line-copy">
+                      <span class="preset-line-name" data-i18n="optExtraEngineBreakdown">Threat labels</span>
+                      <span class="preset-line-hint" data-i18n="optPresetColEngineHint">Consensus labels</span>
+                    </span>
+                    <input type="checkbox" id="preset-quick-engine" class="preset-line-check" />
+                  </label>
+                  <label class="preset-line" for="preset-quick-mitre">
+                    <span class="preset-line-copy">
+                      <span class="preset-line-name" data-i18n="optExtraMitre">MITRE (files)</span>
+                      <span class="preset-line-hint" data-i18n="optPresetColMitreHint">Sandbox tactics</span>
+                    </span>
+                    <input type="checkbox" id="preset-quick-mitre" class="preset-line-check" />
+                  </label>
+                  <div class="preset-abuse-block">
+                    <p class="preset-abuse-heading" data-i18n="optPresetAbuseHeading">AbuseIPDB (IP scans)</p>
+                    <label class="preset-line" for="preset-quick-abuse-reports">
+                      <span class="preset-line-copy">
+                        <span class="preset-line-name" data-i18n="optPresetAbuseReports">Category reports</span>
+                        <span class="preset-line-hint" data-i18n="optPresetAbuseReportsHint">+1 call: newest 100 reports, category breakdown</span>
+                      </span>
+                      <input type="checkbox" id="preset-quick-abuse-reports" class="preset-line-check" />
+                    </label>
+                    <div class="preset-abuse-fields">
+                      <div class="preset-abuse-field">
+                        <label class="preset-abuse-field-label" for="preset-quick-abuse-window" data-i18n="optPresetAbuseWindow">Report window (days)</label>
+                        <p class="preset-abuse-field-hint" data-i18n="optPresetAbuseWindowHintShort">Reports API lookback</p>
+                        <select id="preset-quick-abuse-window" class="preset-abuse-select">
+                          <option value="30">30</option>
+                          <option value="90">90</option>
+                        </select>
+                      </div>
+                      <div class="preset-abuse-field">
+                        <label class="preset-abuse-field-label" for="preset-quick-abuse-overall" data-i18n="optPresetAbuseOverall">Check overview (days)</label>
+                        <p class="preset-abuse-field-hint" data-i18n="optPresetAbuseOverallHintShort">Check API lookback</p>
+                        <select id="preset-quick-abuse-overall" class="preset-abuse-select">
+                          <option value="90">90</option>
+                          <option value="180">180</option>
+                          <option value="365">365</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </article>
+
+              <article
+                class="preset-card preset-card--detailed"
+                aria-labelledby="preset-card-title-detailed"
+              >
+                <header class="preset-card-header">
+                  <span class="preset-card-tier preset-card-tier--detailed" aria-hidden="true">Ⅱ</span>
+                  <div class="preset-card-intro">
+                    <h3 class="preset-card-title" id="preset-card-title-detailed" data-i18n="scanPresetDetailed">
+                      Detailed mode
+                    </h3>
+                    <p class="preset-card-lead" data-i18n="optPresetRowDetailedDesc">
+                      Adds relationship context and file behaviour (MITRE).
+                    </p>
+                  </div>
+                </header>
+                <div class="preset-card-body">
+                  <div
+                    class="preset-ioc-matrix"
+                    data-preset="detailed"
+                    role="table"
+                    aria-label="Detailed preset by IoC type"
+                  ></div>
+                  <p class="preset-override-note" data-i18n="optPresetOverrideNote">
+                    Checkboxes below apply the same profile to all IoC types when saved.
+                  </p>
+                  <label class="preset-line" for="preset-detailed-rel">
+                    <span class="preset-line-copy">
+                      <span class="preset-line-name" data-i18n="optExtraRelPrimary">Related IOCs (primary)</span>
+                      <span class="preset-line-hint" data-i18n="optPresetColRelHint">Resolutions, contacted IPs/domains</span>
+                    </span>
+                    <input type="checkbox" id="preset-detailed-rel" class="preset-line-check" />
+                  </label>
+                  <label class="preset-line" for="preset-detailed-relsec">
+                    <span class="preset-line-copy">
+                      <span class="preset-line-name" data-i18n="optExtraRelSecondary">Secondary pivots</span>
+                      <span class="preset-line-hint" data-i18n="optPresetColRelSecHint">communicating_files, extra domains</span>
+                    </span>
+                    <input type="checkbox" id="preset-detailed-relsec" class="preset-line-check" />
+                  </label>
+                  <label class="preset-line" for="preset-detailed-engine">
+                    <span class="preset-line-copy">
+                      <span class="preset-line-name" data-i18n="optExtraEngineBreakdown">Threat labels</span>
+                      <span class="preset-line-hint" data-i18n="optPresetColEngineHint">Consensus labels</span>
+                    </span>
+                    <input type="checkbox" id="preset-detailed-engine" class="preset-line-check" />
+                  </label>
+                  <label class="preset-line" for="preset-detailed-mitre">
+                    <span class="preset-line-copy">
+                      <span class="preset-line-name" data-i18n="optExtraMitre">MITRE (files)</span>
+                      <span class="preset-line-hint" data-i18n="optPresetColMitreHint">Sandbox tactics</span>
+                    </span>
+                    <input type="checkbox" id="preset-detailed-mitre" class="preset-line-check" />
+                  </label>
+                  <div class="preset-abuse-block">
+                    <p class="preset-abuse-heading" data-i18n="optPresetAbuseHeading">AbuseIPDB (IP scans)</p>
+                    <label class="preset-line" for="preset-detailed-abuse-reports">
+                      <span class="preset-line-copy">
+                        <span class="preset-line-name" data-i18n="optPresetAbuseReports">Category reports</span>
+                        <span class="preset-line-hint" data-i18n="optPresetAbuseReportsHint">+1 call: newest 100 reports, category breakdown</span>
+                      </span>
+                      <input type="checkbox" id="preset-detailed-abuse-reports" class="preset-line-check" />
+                    </label>
+                    <div class="preset-abuse-fields">
+                      <div class="preset-abuse-field">
+                        <label class="preset-abuse-field-label" for="preset-detailed-abuse-window" data-i18n="optPresetAbuseWindow">Report window (days)</label>
+                        <p class="preset-abuse-field-hint" data-i18n="optPresetAbuseWindowHintShort">Reports API lookback</p>
+                        <select id="preset-detailed-abuse-window" class="preset-abuse-select">
+                          <option value="30">30</option>
+                          <option value="90">90</option>
+                        </select>
+                      </div>
+                      <div class="preset-abuse-field">
+                        <label class="preset-abuse-field-label" for="preset-detailed-abuse-overall" data-i18n="optPresetAbuseOverall">Check overview (days)</label>
+                        <p class="preset-abuse-field-hint" data-i18n="optPresetAbuseOverallHintShort">Check API lookback</p>
+                        <select id="preset-detailed-abuse-overall" class="preset-abuse-select">
+                          <option value="90">90</option>
+                          <option value="180">180</option>
+                          <option value="365">365</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </article>
+
+              <article
+                class="preset-card preset-card--analyst"
+                aria-labelledby="preset-card-title-analyst"
+              >
+                <header class="preset-card-header">
+                  <span class="preset-card-tier preset-card-tier--analyst" aria-hidden="true">Ⅲ</span>
+                  <div class="preset-card-intro">
+                    <h3 class="preset-card-title" id="preset-card-title-analyst" data-i18n="scanPresetAnalyst">
+                      Analyst mode
+                    </h3>
+                    <p class="preset-card-lead" data-i18n="optPresetRowAnalystDesc">
+                      Full enrichment including per-engine detection text.
+                    </p>
+                  </div>
+                </header>
+                <div class="preset-card-body">
+                  <div
+                    class="preset-ioc-matrix"
+                    data-preset="analyst"
+                    role="table"
+                    aria-label="Analyst preset by IoC type"
+                  ></div>
+                  <p class="preset-override-note" data-i18n="optPresetOverrideNote">
+                    Checkboxes below apply the same profile to all IoC types when saved.
+                  </p>
+                  <label class="preset-line" for="preset-analyst-rel">
+                    <span class="preset-line-copy">
+                      <span class="preset-line-name" data-i18n="optExtraRelPrimary">Related IOCs (primary)</span>
+                      <span class="preset-line-hint" data-i18n="optPresetColRelHint">Resolutions, contacted IPs/domains</span>
+                    </span>
+                    <input type="checkbox" id="preset-analyst-rel" class="preset-line-check" />
+                  </label>
+                  <label class="preset-line" for="preset-analyst-relsec">
+                    <span class="preset-line-copy">
+                      <span class="preset-line-name" data-i18n="optExtraRelSecondary">Secondary pivots</span>
+                      <span class="preset-line-hint" data-i18n="optPresetColRelSecHint">communicating_files, extra domains</span>
+                    </span>
+                    <input type="checkbox" id="preset-analyst-relsec" class="preset-line-check" />
+                  </label>
+                  <label class="preset-line" for="preset-analyst-engine">
+                    <span class="preset-line-copy">
+                      <span class="preset-line-name" data-i18n="optExtraEngineBreakdown">Threat labels</span>
+                      <span class="preset-line-hint" data-i18n="optPresetColEngineHint">Consensus labels</span>
+                    </span>
+                    <input type="checkbox" id="preset-analyst-engine" class="preset-line-check" />
+                  </label>
+                  <label class="preset-line" for="preset-analyst-mitre">
+                    <span class="preset-line-copy">
+                      <span class="preset-line-name" data-i18n="optExtraMitre">MITRE (files)</span>
+                      <span class="preset-line-hint" data-i18n="optPresetColMitreHint">Sandbox tactics</span>
+                    </span>
+                    <input type="checkbox" id="preset-analyst-mitre" class="preset-line-check" />
+                  </label>
+                  <div class="preset-abuse-block">
+                    <p class="preset-abuse-heading" data-i18n="optPresetAbuseHeading">AbuseIPDB (IP scans)</p>
+                    <label class="preset-line" for="preset-analyst-abuse-reports">
+                      <span class="preset-line-copy">
+                        <span class="preset-line-name" data-i18n="optPresetAbuseReports">Category reports</span>
+                        <span class="preset-line-hint" data-i18n="optPresetAbuseReportsHint">+1 call: newest 100 reports, category breakdown</span>
+                      </span>
+                      <input type="checkbox" id="preset-analyst-abuse-reports" class="preset-line-check" />
+                    </label>
+                    <div class="preset-abuse-fields">
+                      <div class="preset-abuse-field">
+                        <label class="preset-abuse-field-label" for="preset-analyst-abuse-window" data-i18n="optPresetAbuseWindow">Report window (days)</label>
+                        <p class="preset-abuse-field-hint" data-i18n="optPresetAbuseWindowHintShort">Reports API lookback</p>
+                        <select id="preset-analyst-abuse-window" class="preset-abuse-select">
+                          <option value="30">30</option>
+                          <option value="90">90</option>
+                        </select>
+                      </div>
+                      <div class="preset-abuse-field">
+                        <label class="preset-abuse-field-label" for="preset-analyst-abuse-overall" data-i18n="optPresetAbuseOverall">Check overview (days)</label>
+                        <p class="preset-abuse-field-hint" data-i18n="optPresetAbuseOverallHintShort">Check API lookback</p>
+                        <select id="preset-analyst-abuse-overall" class="preset-abuse-select">
+                          <option value="90">90</option>
+                          <option value="180">180</option>
+                          <option value="365">365</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </div>
+            <div class="actions actions-split">
+              <button
+                type="button"
+                id="btn-reset-scan-presets"
+                class="btn btn-secondary"
+                data-i18n="optResetScanPresets"
+              >
+                Reset to defaults
+              </button>
+              <button type="submit" class="btn btn-primary" data-i18n="optSaveScanPresets">Save scan presets</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="card glass card-blacklist" aria-labelledby="title-blacklist">
+          <div class="card-head">
+            <h2 id="title-blacklist" data-i18n="optBlacklistTitle">Domain badge blacklist</h2>
+            <p class="sub" data-i18n="optBlacklistSub">Pages matching these rules will not show inline VT badges.</p>
+          </div>
+          <form id="blacklist-form" class="form blacklist-form">
+            <div class="blacklist-panel">
+              <textarea
+                id="domain-badge-blacklist"
+                class="blacklist-input"
+                rows="6"
+                spellcheck="false"
+                aria-labelledby="title-blacklist"
+                aria-describedby="blacklist-hint-text"
+                data-i18n-placeholder="optBlacklistPlaceholder"
+                placeholder="one.example.com&#10;*.internal.local&#10;https://news.site.com/private"
+              ></textarea>
+              <p id="blacklist-hint-text" class="blacklist-hint" data-i18n="optBlacklistHint">
+                One rule per line. Supports domain, *.wildcard, URL prefix, or /path prefix.
+              </p>
+            </div>
+            <div class="actions">
+              <button type="submit" class="btn btn-primary" data-i18n="optSaveBlacklist">Save blacklist</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="card glass card-copy-summary" aria-labelledby="title-copy-summary">
+          <div class="card-head">
+            <h2 id="title-copy-summary" data-i18n="optCopySummaryTemplateTitle">Copy summary fields</h2>
+            <p class="sub" data-i18n="optCopySummaryTemplateSub">Choose which lines are included in copied summary per IoC type.</p>
+          </div>
+          <form id="copy-summary-form" class="form blacklist-form">
+            <div class="blacklist-panel">
+              <p id="copy-summary-hint-text" class="blacklist-hint" data-i18n="optCopySummaryTemplateHint">
+                Select fields for each IoC type. Only applicable fields are shown.
+              </p>
+            </div>
+
+            <div class="copy-summary-toolbar">
+              <div class="copy-summary-presets" role="group" aria-label="Copy summary presets">
+                <button type="button" id="btn-copy-preset-minimal" class="btn btn-secondary" data-i18n="optCopyPresetMinimal">Minimal</button>
+                <button type="button" id="btn-copy-preset-analyst" class="btn btn-secondary" data-i18n="optCopyPresetAnalyst">Analyst</button>
+                <button type="button" id="btn-copy-preset-full" class="btn btn-secondary" data-i18n="optCopyPresetFull">Full</button>
+              </div>
+            </div>
+
+            <div class="copy-matrix-wrap">
+              <table class="copy-matrix" role="grid" aria-label="Copy summary field matrix">
+                <thead>
+                  <tr>
+                    <th data-i18n="optCopyMatrixField">Field</th>
+                    <th>IP</th>
+                    <th>Domain</th>
+                    <th>URL</th>
+                    <th>File</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th data-i18n="optCopyFieldIoc">IOC</th>
+                    <td><button type="button" id="copy-ip-ioc" class="copy-matrix-toggle" data-kind="ip" data-field="ioc" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-domain-ioc" class="copy-matrix-toggle" data-kind="domain" data-field="ioc" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-url-ioc" class="copy-matrix-toggle" data-kind="url" data-field="ioc" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-file-ioc" class="copy-matrix-toggle" data-kind="file" data-field="ioc" aria-pressed="false"></button></td>
+                  </tr>
+                  <tr>
+                    <th data-i18n="optCopyFieldKind">Type</th>
+                    <td><button type="button" id="copy-ip-kind" class="copy-matrix-toggle" data-kind="ip" data-field="kind" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-domain-kind" class="copy-matrix-toggle" data-kind="domain" data-field="kind" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-url-kind" class="copy-matrix-toggle" data-kind="url" data-field="kind" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-file-kind" class="copy-matrix-toggle" data-kind="file" data-field="kind" aria-pressed="false"></button></td>
+                  </tr>
+                  <tr>
+                    <th data-i18n="optCopyFieldThreatLevel">Threat level</th>
+                    <td><button type="button" id="copy-ip-threat" class="copy-matrix-toggle" data-kind="ip" data-field="threatLevel" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-domain-threat" class="copy-matrix-toggle" data-kind="domain" data-field="threatLevel" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-url-threat" class="copy-matrix-toggle" data-kind="url" data-field="threatLevel" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-file-threat" class="copy-matrix-toggle" data-kind="file" data-field="threatLevel" aria-pressed="false"></button></td>
+                  </tr>
+                  <tr>
+                    <th data-i18n="optCopyFieldVtDetections">VT detections</th>
+                    <td><button type="button" id="copy-ip-vt" class="copy-matrix-toggle" data-kind="ip" data-field="vt" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-domain-vt" class="copy-matrix-toggle" data-kind="domain" data-field="vt" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-url-vt" class="copy-matrix-toggle" data-kind="url" data-field="vt" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-file-vt" class="copy-matrix-toggle" data-kind="file" data-field="vt" aria-pressed="false"></button></td>
+                  </tr>
+                  <tr>
+                    <th data-i18n="optCopyFieldDetectionRatio">Detection ratio</th>
+                    <td><button type="button" id="copy-ip-ratio" class="copy-matrix-toggle" data-kind="ip" data-field="detectionRatio" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-domain-ratio" class="copy-matrix-toggle" data-kind="domain" data-field="detectionRatio" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-url-ratio" class="copy-matrix-toggle" data-kind="url" data-field="detectionRatio" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-file-ratio" class="copy-matrix-toggle" data-kind="file" data-field="detectionRatio" aria-pressed="false"></button></td>
+                  </tr>
+                  <tr>
+                    <th data-i18n="optCopyFieldReputation">Risk score</th>
+                    <td><button type="button" id="copy-ip-rep" class="copy-matrix-toggle" data-kind="ip" data-field="reputation" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-domain-rep" class="copy-matrix-toggle" data-kind="domain" data-field="reputation" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-url-rep" class="copy-matrix-toggle" data-kind="url" data-field="reputation" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-file-rep" class="copy-matrix-toggle" data-kind="file" data-field="reputation" aria-pressed="false"></button></td>
+                  </tr>
+                  <tr>
+                    <th data-i18n="optCopyFieldSuggestedThreat">Suggested threat</th>
+                    <td><button type="button" id="copy-ip-suggested" class="copy-matrix-toggle" data-kind="ip" data-field="suggestedThreat" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-domain-suggested" class="copy-matrix-toggle" data-kind="domain" data-field="suggestedThreat" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-url-suggested" class="copy-matrix-toggle" data-kind="url" data-field="suggestedThreat" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-file-suggested" class="copy-matrix-toggle" data-kind="file" data-field="suggestedThreat" aria-pressed="false"></button></td>
+                  </tr>
+                  <tr>
+                    <th data-i18n="optCopyFieldAbuseScore">Abuse score</th>
+                    <td><button type="button" id="copy-ip-abuse-score" class="copy-matrix-toggle" data-kind="ip" data-field="abuseScore" aria-pressed="false"></button></td>
+                    <td><span class="copy-matrix-na">-</span></td>
+                    <td><span class="copy-matrix-na">-</span></td>
+                    <td><span class="copy-matrix-na">-</span></td>
+                  </tr>
+                  <tr>
+                    <th data-i18n="optCopyFieldAbuseReports">Abuse reports</th>
+                    <td><button type="button" id="copy-ip-abuse-reports" class="copy-matrix-toggle" data-kind="ip" data-field="abuseReports" aria-pressed="false"></button></td>
+                    <td><span class="copy-matrix-na">-</span></td>
+                    <td><span class="copy-matrix-na">-</span></td>
+                    <td><span class="copy-matrix-na">-</span></td>
+                  </tr>
+                  <tr>
+                    <th data-i18n="optCopyFieldTags">Tags</th>
+                    <td><button type="button" id="copy-ip-tags" class="copy-matrix-toggle" data-kind="ip" data-field="tags" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-domain-tags" class="copy-matrix-toggle" data-kind="domain" data-field="tags" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-url-tags" class="copy-matrix-toggle" data-kind="url" data-field="tags" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-file-tags" class="copy-matrix-toggle" data-kind="file" data-field="tags" aria-pressed="false"></button></td>
+                  </tr>
+                  <tr>
+                    <th data-i18n="optCopyFieldDistinctLabels">AV labels</th>
+                    <td><button type="button" id="copy-ip-labels" class="copy-matrix-toggle" data-kind="ip" data-field="distinctLabels" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-domain-labels" class="copy-matrix-toggle" data-kind="domain" data-field="distinctLabels" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-url-labels" class="copy-matrix-toggle" data-kind="url" data-field="distinctLabels" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-file-labels" class="copy-matrix-toggle" data-kind="file" data-field="distinctLabels" aria-pressed="false"></button></td>
+                  </tr>
+                  <tr>
+                    <th data-i18n="optCopyFieldMitre">MITRE ATT&CK</th>
+                    <td><span class="copy-matrix-na">-</span></td>
+                    <td><span class="copy-matrix-na">-</span></td>
+                    <td><span class="copy-matrix-na">-</span></td>
+                    <td><button type="button" id="copy-file-mitre" class="copy-matrix-toggle" data-kind="file" data-field="mitre" aria-pressed="false"></button></td>
+                  </tr>
+                  <tr>
+                    <th data-i18n="optCopyFieldTime">Scanned time</th>
+                    <td><button type="button" id="copy-ip-time" class="copy-matrix-toggle" data-kind="ip" data-field="time" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-domain-time" class="copy-matrix-toggle" data-kind="domain" data-field="time" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-url-time" class="copy-matrix-toggle" data-kind="url" data-field="time" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-file-time" class="copy-matrix-toggle" data-kind="file" data-field="time" aria-pressed="false"></button></td>
+                  </tr>
+                  <tr>
+                    <th data-i18n="optCopyFieldReportLink">Report link</th>
+                    <td><button type="button" id="copy-ip-report" class="copy-matrix-toggle" data-kind="ip" data-field="reportLink" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-domain-report" class="copy-matrix-toggle" data-kind="domain" data-field="reportLink" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-url-report" class="copy-matrix-toggle" data-kind="url" data-field="reportLink" aria-pressed="false"></button></td>
+                    <td><button type="button" id="copy-file-report" class="copy-matrix-toggle" data-kind="file" data-field="reportLink" aria-pressed="false"></button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="actions actions-split">
+              <button type="button" id="btn-copy-summary-template-reset" class="btn btn-secondary" data-i18n="optCopySummaryTemplateReset">Reset fields</button>
+              <button type="submit" class="btn btn-primary" data-i18n="optCopySummaryTemplateSave">Save fields</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="card glass card-data" aria-labelledby="title-data">
+          <div class="card-head">
+            <h2 id="title-data" data-i18n="optSectionData">Data management</h2>
+            <p class="sub" data-i18n="optHistorySub">Recent lookups are stored only in this browser profile.</p>
+          </div>
+          <div class="data-actions">
+            <button type="button" id="btn-clear-history" class="btn btn-danger" data-i18n="optClearHistory">Clear recent lookups</button>
+            <button type="button" id="btn-clear-batch" class="btn btn-danger btn-ghost" data-i18n="optClearBatch">Clear batch history</button>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden>
+    <span class="check" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path class="check-path" d="M5 13l4 4L19 7" />
+      </svg>
+    </span>
+    <span id="toast-text">Saved</span>
+  </div>
+
+  <script src="utils.js"></script>
+  <script src="i18n.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

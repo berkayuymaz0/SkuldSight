@@ -1,0 +1,16 @@
+:root {
+  --vt-accent: #34d399;
+  --vt-accent-strong: #10b981;
+  --vt-accent-secondary: #38bdf8;
+  --vt-accent-secondary-soft: #7dd3fc;
+  --vt-info: #38bdf8;
+  --vt-warn: #fbbf24;
+  --vt-warn-strong: #f59e0b;
+  --vt-danger: #f87171;
+  --vt-danger-strong: #ef4444;
+  --vt-slate: #64748b;
+  --vt-border: rgba(148, 163, 184, 0.18);
+  --vt-border-strong: rgba(148, 163, 184, 0.32);
+  --vt-font-ui: "Segoe UI", system-ui, -apple-system, sans-serif;
+  --vt-font-mono: "Consolas", "Fira Code", "Courier New", monospace;
+}

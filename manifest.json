@@ -1,0 +1,62 @@
+{
+  "manifest_version": 3,
+  "name": "PixelPaw SOC",
+  "version": "1.0.0",
+  "description": "Investigate IoCs (IP, domain, URL, file hash) with PixelPaw SOC via VirusTotal workflows.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "PixelPaw SOC"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "side_panel": {
+    "default_path": "popup.html?surface=sidepanel"
+  },
+  "options_page": "options.html",
+  "permissions": [
+    "storage",
+    "contextMenus",
+    "notifications",
+    "clipboardWrite",
+    "alarms",
+    "sidePanel"
+  ],
+  "host_permissions": [
+    "https://securityweek.com/*",
+    "https://www.securityweek.com/*",
+    "https://cyberscoop.com/*",
+    "https://www.bleepingcomputer.com/*",
+    "https://feeds.feedburner.com/*",
+    "https://thehackernews.com/*",
+    "https://krebsonsecurity.com/*",
+    "https://www.virustotal.com/*",
+    "https://www.cyberscoop.com/*",
+    "https://www.usom.gov.tr/*",
+    "https://api.abuseipdb.com/*"
+  ],
+  "web_accessible_resources": [],
+  "content_scripts": [
+    {
+      "matches": ["https://*/*"],
+      "js": ["i18n.js", "utils.js", "content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https:; connect-src 'self' https://www.virustotal.com https://api.abuseipdb.com https://cyberscoop.com https://www.cyberscoop.com https://www.bleepingcomputer.com https://feeds.feedburner.com https://thehackernews.com https://securityweek.com https://www.securityweek.com https://krebsonsecurity.com https://www.usom.gov.tr; font-src 'self'; object-src 'none'; base-uri 'self';"
+  }
+}

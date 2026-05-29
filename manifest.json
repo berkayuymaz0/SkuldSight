@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "PixelPaw SOC",
   "version": "1.0.2",
-  "description": "Investigate IoCs (IP, domain, URL, file hash) with PixelPaw SOC via VirusTotal workflows.",
+  "description": "Chrome MV3 extension for SOC analysts: scan IPs, domains, URLs & hashes via VirusTotal, with AbuseIPDB, batch scans & on-page IOC badges.",
   "action": {
     "default_popup": "popup.html",
     "default_icon": {

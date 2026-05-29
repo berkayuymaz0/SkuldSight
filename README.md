@@ -41,6 +41,7 @@ See [`SECURITY_HARDENING_CHECKLIST.md`](SECURITY_HARDENING_CHECKLIST.md) before 
 
 **Changed**
 - Single-pass scan order (URL → IP → domain → hash) to prevent double badges (e.g. domain inside a URL)
+- Behavior settings: colored icons beside each toggle and the rate slider (dark/light theme)
 - Version bump to `1.0.2`
 
 ### [1.0.1] — 2026-05-29

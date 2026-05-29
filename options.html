@@ -249,6 +249,11 @@
               <p class="field-hint" data-i18n="optUiModeHint">Side panel keeps the UI open beside the page. Requires Chrome 114+. Applies immediately when you choose a mode.</p>
             </div>
             <label class="pro-mode-toggle" for="pro-mode">
+              <span class="setting-icon setting-icon--pro" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z" />
+                </svg>
+              </span>
               <span class="pro-mode-copy">
                 <span class="pro-mode-title" data-i18n="optProMode">Pro mode (disable API rate limit)</span>
                 <span class="pro-mode-sub" data-i18n="optProModeHint">When enabled, local rate limiting is skipped and requests are sent immediately.</span>
@@ -260,8 +265,16 @@
                 </span>
               </span>
             </label>
-            <label class="field">
-              <span class="label" data-i18n="optRateLabel">Minimum interval between VT calls</span>
+            <label class="field field--with-icon">
+              <span class="field-label-row">
+                <span class="setting-icon setting-icon--rate" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M12 7v5l3 2" />
+                  </svg>
+                </span>
+                <span class="label" data-i18n="optRateLabel">Minimum interval between VT calls</span>
+              </span>
               <div class="slider-row">
                 <input type="range" id="rate-interval" min="15" max="20" step="1" value="16" />
                 <span id="rate-interval-label" class="slider-label">16 seconds</span>
@@ -269,7 +282,13 @@
               <p class="field-hint" data-i18n="optRateHint">Default 16s (~4 requests/minute). Adjust if your API tier allows faster pacing.</p>
             </label>
             <div class="behavior-switches">
-              <label class="pro-mode-toggle mini-toggle" for="content-ioc-badges">
+              <label class="pro-mode-toggle mini-toggle mini-toggle--has-hint" for="content-ioc-badges">
+                <span class="setting-icon setting-icon--iocs" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="3.25" />
+                    <path d="M11 2v2.5M11 17.5V20M2 11h2.5M17.5 11H20M4.4 4.4l1.8 1.8M17.8 17.8l1.8 1.8M4.4 17.6l1.8-1.8M17.8 6.2l1.8-1.8" />
+                  </svg>
+                </span>
                 <span class="pro-mode-copy">
                   <span class="pro-mode-title" data-i18n="optContentIocBadges">Enable on-page IOC detection (badges)</span>
                   <span class="field-hint" data-i18n="optContentIocBadgesHint">Highlight URLs, IPs, domains, and file hashes in page text with scan badges.</span>
@@ -282,6 +301,12 @@
                 </span>
               </label>
               <label class="pro-mode-toggle mini-toggle" for="batch-use-abuse">
+                <span class="setting-icon setting-icon--abuse" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 3 4 6v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V6l-8-3z" />
+                    <path d="M9.5 12.2 11 13.7l3.5-3.6" />
+                  </svg>
+                </span>
                 <span class="pro-mode-copy">
                   <span class="pro-mode-title" data-i18n="optBatchUseAbuse">Enable AbuseIPDB enrichment during batch scans (IP only)</span>
                 </span>
@@ -293,6 +318,11 @@
                 </span>
               </label>
               <label class="pro-mode-toggle mini-toggle" for="notify-queued">
+                <span class="setting-icon setting-icon--queue" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8 3h8v5l-4 4.5L8 8V3zM8 21h8v-5l-4-4.5L8 16v5z" />
+                  </svg>
+                </span>
                 <span class="pro-mode-copy">
                   <span class="pro-mode-title" data-i18n="optNotifyQueued">Show notification when a request waits on the rate limit queue</span>
                 </span>
@@ -304,6 +334,14 @@
                 </span>
               </label>
               <label class="pro-mode-toggle mini-toggle" for="notify-news">
+                <span class="setting-icon setting-icon--news" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 5c5 0 7 2 7 7v7H5V5z" />
+                    <path d="M12 5c4.5 0 7 2.5 7 7v7h-7" />
+                    <circle cx="6" cy="19" r="1.25" fill="currentColor" stroke="none" />
+                    <circle cx="13" cy="19" r="1.25" fill="currentColor" stroke="none" />
+                  </svg>
+                </span>
                 <span class="pro-mode-copy">
                   <span class="pro-mode-title" data-i18n="optNotifyNews">Show notification when new RSS items or USOM alerts arrive on automatic refresh</span>
                 </span>
@@ -315,6 +353,12 @@
                 </span>
               </label>
               <label class="pro-mode-toggle mini-toggle" for="notify-context">
+                <span class="setting-icon setting-icon--context" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 4l6.5 14 1.8-4.2L18 11 5 4z" />
+                    <path d="M16 6h3v3M19 6l-4 4" />
+                  </svg>
+                </span>
                 <span class="pro-mode-copy">
                   <span class="pro-mode-title" data-i18n="optNotifyContext">Show notification when a context-menu scan finishes (success or error)</span>
                 </span>

@@ -1,52 +1,52 @@
 # PixelPaw SOC
 
-Chrome uzantısı (Manifest V3): IoC taraması (VirusTotal), isteğe bağlı AbuseIPDB (IP), yerel geçmiş ve analitik. Arayüz: Türkçe / İngilizce.
+Chrome extension (Manifest V3) for IoC lookups via VirusTotal, optional AbuseIPDB enrichment for IPs, and local history/analytics. UI languages: English and Turkish.
 
-## Özellikler
+## Features
 
-- Tekil ve toplu IoC taraması (IP, domain, URL, hash)
-- Sağ tık ve sayfa içi domain/IP rozeti
-- Tarama şablonları (Hızlı / Detaylı / Analist)
-- VirusTotal **yeniden analiz** (reanalyze) — sonuç kartından
-- Ayarlar: API anahtarları, hız limiti, bildirimler, analitik panel
+- Single and batch IoC scans (IP, domain, URL, hash)
+- Context-menu scan and in-page domain/IP badges
+- Scan presets (Quick / Detailed / Analyst)
+- VirusTotal **reanalyze** from the result card
+- Settings: API keys, rate limit, notifications, analytics dashboard
 
-## Kurulum
+## Installation
 
-1. `chrome://extensions` → **Geliştirici modu**
-2. **Paketlenmemiş öğe yükle** → proje klasörü
+1. Open `chrome://extensions` and enable **Developer mode**
+2. Click **Load unpacked** and select this project folder
 
-## Yapılandırma
+## Configuration
 
-**Ayarlar** sayfasından:
+In **Settings**:
 
-| Anahtar | Zorunlu | Açıklama |
-|---------|---------|----------|
-| VirusTotal API | Evet | Tüm taramalar |
-| AbuseIPDB API | Hayır | Yalnızca IP zenginleştirme |
+| Key | Required | Purpose |
+|-----|----------|---------|
+| VirusTotal API | Yes | All scans |
+| AbuseIPDB API | No | IP enrichment only |
 
-Anahtarlar yalnızca `chrome.storage.local` içinde tutulur (14 gün TTL).
+Keys are stored in `chrome.storage.local` only (14-day TTL).
 
-## Geliştirme
+## Development
 
 ```bash
 bash scripts/prepush-check.sh
 ```
 
-Güvenlik kontrol listesi: [`SECURITY_HARDENING_CHECKLIST.md`](SECURITY_HARDENING_CHECKLIST.md)
+Security checklist: [`SECURITY_HARDENING_CHECKLIST.md`](SECURITY_HARDENING_CHECKLIST.md)
 
 ## Changelog
 
 ### [1.0.1] — 2026-05-29
 
-**Eklenen**
-- Tüm IoC türleri için VT **Reanalyze** (sonuç kartı, sağ üst ikon)
-- Chart üstü durum bandı (kuyruk / hata mesajları)
-- Arka plan: `VT_REANALYZE` → VT v3 `POST .../analyse`
+**Added**
+- VT **Reanalyze** for all IoC types (result card, top-right icon)
+- Status banner above the chart (queue / error feedback)
+- Background: `VT_REANALYZE` → VT v3 `POST .../analyse`
 
-**Değişen**
-- Reanalyze geri bildirimi toast yerine chart alanında
-- Sürüm: `1.0.1`
+**Changed**
+- Reanalyze feedback shown in the chart area instead of a toast
+- Version bump to `1.0.1`
 
 ### [1.0.0] — 2026-05-28
 
-- İlk yayın: popup tarama, batch, içerik scripti, ayarlar/analitik, güvenlik sertleştirme temeli
+- Initial release: popup scans, batch, content script, settings/analytics, security hardening baseline

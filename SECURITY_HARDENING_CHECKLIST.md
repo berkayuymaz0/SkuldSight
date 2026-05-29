@@ -5,7 +5,6 @@
 - Confirm `content_scripts.matches` is limited to required origins.
 - Ensure all remote endpoints are `https://` only.
 - Review `web_accessible_resources` for minimum exposure.
-- Run `scripts/prepush-check.sh` and resolve any failure.
 
 ## Runtime messaging safety
 - `chrome.runtime.onMessage` accepts trusted runtime sender only.

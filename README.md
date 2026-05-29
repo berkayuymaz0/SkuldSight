@@ -26,13 +26,9 @@ In **Settings**:
 
 Keys are stored in `chrome.storage.local` only (14-day TTL).
 
-## Development
+## Security
 
-```bash
-bash scripts/prepush-check.sh
-```
-
-Security checklist: [`SECURITY_HARDENING_CHECKLIST.md`](SECURITY_HARDENING_CHECKLIST.md)
+See [`SECURITY_HARDENING_CHECKLIST.md`](SECURITY_HARDENING_CHECKLIST.md) before release.
 
 ## Changelog
 

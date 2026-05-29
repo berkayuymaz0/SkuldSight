@@ -916,6 +916,115 @@
     return out;
   }
 
+  const URL_TEXT_RE = /\b(?:https?:\/\/|hxxps?:\/\/|hxxp:\/\/)[^\s<>"')\]]+/gi;
+  const FILE_HASH_TEXT_RE =
+    /(?<![a-fA-F0-9])([a-fA-F0-9]{64}|[a-fA-F0-9]{40}|[a-fA-F0-9]{32})(?![a-fA-F0-9])/g;
+
+  function trimUrlTrailingPunct(s) {
+    return String(s || '').replace(/[.,;:!?)\]}>]+$/, '');
+  }
+
+  function normalizeUrlCandidate(raw) {
+    let s = normalizeIocInput(String(raw || '').trim());
+    s = trimUrlTrailingPunct(s);
+    return s;
+  }
+
+  function isLikelyHttpUrl(raw) {
+    const u = normalizeUrlCandidate(raw);
+    if (!u) {
+      return false;
+    }
+    try {
+      const parsed = new URL(u);
+      return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function isFileHashToken(raw) {
+    const v = String(raw || '').trim().toLowerCase();
+    if (/^[a-f0-9]{32}$/.test(v)) {
+      return { value: v, hashType: 'md5' };
+    }
+    if (/^[a-f0-9]{40}$/.test(v)) {
+      return { value: v, hashType: 'sha1' };
+    }
+    if (/^[a-f0-9]{64}$/.test(v)) {
+      return { value: v, hashType: 'sha256' };
+    }
+    return null;
+  }
+
+  function rangesOverlap(a, b) {
+    return a.start < b.end && b.start < a.end;
+  }
+
+  function overlapsAny(range, occupied) {
+    for (let i = 0; i < occupied.length; i++) {
+      if (rangesOverlap(range, occupied[i])) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function findUrlsInText(text) {
+    const src = String(text || '');
+    const out = [];
+    const occupied = [];
+    URL_TEXT_RE.lastIndex = 0;
+    let m = null;
+    while ((m = URL_TEXT_RE.exec(src))) {
+      const raw = m[0];
+      const start = m.index;
+      const normalized = normalizeUrlCandidate(raw);
+      if (!isLikelyHttpUrl(normalized)) {
+        continue;
+      }
+      const range = { start: start, end: start + raw.length, value: normalized, kind: 'url' };
+      if (overlapsAny(range, occupied)) {
+        continue;
+      }
+      occupied.push(range);
+      out.push(range);
+    }
+    return out;
+  }
+
+  function findFileHashesInText(text) {
+    const src = String(text || '');
+    const out = [];
+    FILE_HASH_TEXT_RE.lastIndex = 0;
+    let m = null;
+    while ((m = FILE_HASH_TEXT_RE.exec(src))) {
+      const token = m[1];
+      const info = isFileHashToken(token);
+      if (!info) {
+        continue;
+      }
+      out.push({
+        start: m.index,
+        end: m.index + m[0].length,
+        value: info.value,
+        hashType: info.hashType,
+        kind: 'file'
+      });
+    }
+    return out;
+  }
+
+  function shortenHash(hash, head, tail) {
+    const s = String(hash || '').trim();
+    const h = Number(head) > 0 ? Number(head) : 10;
+    const t = Number(tail) > 0 ? Number(tail) : 8;
+    if (s.length <= h + t + 3) {
+      return s;
+    }
+    return s.slice(0, h) + '…' + s.slice(-t);
+  }
+
   // detectIocKind: Popup kota ipucu için hafif IoC sınıflandırma.
   function detectIocKind(raw) {
     const s = String(raw || '').trim();
@@ -1084,6 +1193,14 @@
     ,
     defaultCopySummaryFields: defaultCopySummaryFields,
     copySummaryFieldKeys: copySummaryFieldKeys,
-    normalizeCopySummaryFields: normalizeCopySummaryFields
+    normalizeCopySummaryFields: normalizeCopySummaryFields,
+    normalizeUrlCandidate: normalizeUrlCandidate,
+    isLikelyHttpUrl: isLikelyHttpUrl,
+    isFileHashToken: isFileHashToken,
+    findUrlsInText: findUrlsInText,
+    findFileHashesInText: findFileHashesInText,
+    rangesOverlap: rangesOverlap,
+    overlapsAny: overlapsAny,
+    shortenHash: shortenHash
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

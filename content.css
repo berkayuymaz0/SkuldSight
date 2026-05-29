@@ -1,7 +1,9 @@
 /* PixelPaw SOC — domain badge & inline panel (aligned with popup.css) */
 
 button.vt-domain-badge,
-button.vt-ip-badge {
+button.vt-ip-badge,
+button.vt-url-badge,
+button.vt-hash-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -25,7 +27,9 @@ button.vt-ip-badge {
 }
 
 button.vt-domain-badge,
-button.vt-ip-badge {
+button.vt-ip-badge,
+button.vt-url-badge,
+button.vt-hash-badge {
   color: #bae6fd;
   background: linear-gradient(155deg, #1e4d6b 0%, #1a3d5c 100%);
   box-shadow:
@@ -34,23 +38,31 @@ button.vt-ip-badge {
 }
 
 button.vt-domain-badge .vt-badge-glyph,
-button.vt-ip-badge .vt-badge-glyph {
+button.vt-ip-badge .vt-badge-glyph,
+button.vt-url-badge .vt-badge-glyph,
+button.vt-hash-badge .vt-badge-glyph {
   color: #7dd3fc;
 }
 
 button.vt-domain-badge:hover,
-button.vt-ip-badge:hover {
+button.vt-ip-badge:hover,
+button.vt-url-badge:hover,
+button.vt-hash-badge:hover {
   background: linear-gradient(155deg, #255a7d 0%, #204868 100%);
   border-color: rgba(56, 189, 248, 0.32);
 }
 
 button.vt-domain-badge:focus,
-button.vt-ip-badge:focus {
+button.vt-ip-badge:focus,
+button.vt-url-badge:focus,
+button.vt-hash-badge:focus {
   outline: none;
 }
 
 button.vt-domain-badge:focus-visible,
-button.vt-ip-badge:focus-visible {
+button.vt-ip-badge:focus-visible,
+button.vt-url-badge:focus-visible,
+button.vt-hash-badge:focus-visible {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
     0 0 0 2px rgba(56, 189, 248, 0.35);
@@ -303,19 +315,25 @@ button.vt-ip-badge.vt-badge-has-score {
 
 /* Light theme (data-vt-theme on badge / panel) */
 button.vt-domain-badge[data-vt-theme='light'],
-button.vt-ip-badge[data-vt-theme='light'] {
+button.vt-ip-badge[data-vt-theme='light'],
+button.vt-url-badge[data-vt-theme='light'],
+button.vt-hash-badge[data-vt-theme='light'] {
   background: linear-gradient(155deg, #3b82a8 0%, #2f6f94 100%);
   border-color: rgba(15, 23, 42, 0.12);
   color: #f0f9ff;
 }
 
 button.vt-domain-badge[data-vt-theme='light'] .vt-badge-glyph,
-button.vt-ip-badge[data-vt-theme='light'] .vt-badge-glyph {
+button.vt-ip-badge[data-vt-theme='light'] .vt-badge-glyph,
+button.vt-url-badge[data-vt-theme='light'] .vt-badge-glyph,
+button.vt-hash-badge[data-vt-theme='light'] .vt-badge-glyph {
   color: #e0f2fe;
 }
 
 button.vt-domain-badge[data-vt-theme='light']:hover,
-button.vt-ip-badge[data-vt-theme='light']:hover {
+button.vt-ip-badge[data-vt-theme='light']:hover,
+button.vt-url-badge[data-vt-theme='light']:hover,
+button.vt-hash-badge[data-vt-theme='light']:hover {
   background: linear-gradient(155deg, #458bb5 0%, #3779a3 100%);
 }
 
@@ -376,61 +394,81 @@ button.vt-ip-badge[data-vt-theme='light']:hover {
 }
 
 button.vt-domain-badge.vt-badge-pending,
-button.vt-ip-badge.vt-badge-pending {
+button.vt-ip-badge.vt-badge-pending,
+button.vt-url-badge.vt-badge-pending,
+button.vt-hash-badge.vt-badge-pending {
   background: linear-gradient(155deg, #1e4d6b 0%, #1a3d5c 100%);
   border-color: rgba(56, 189, 248, 0.22);
   color: #bae6fd;
 }
 
 button.vt-domain-badge.vt-badge-pending .vt-badge-glyph,
-button.vt-ip-badge.vt-badge-pending .vt-badge-glyph {
+button.vt-ip-badge.vt-badge-pending .vt-badge-glyph,
+button.vt-url-badge.vt-badge-pending .vt-badge-glyph,
+button.vt-hash-badge.vt-badge-pending .vt-badge-glyph {
   color: #7dd3fc;
 }
 
 button.vt-domain-badge[data-vt-risk='clean'],
-button.vt-ip-badge[data-vt-risk='clean'] {
+button.vt-ip-badge[data-vt-risk='clean'],
+button.vt-url-badge[data-vt-risk='clean'],
+button.vt-hash-badge[data-vt-risk='clean'] {
   background: linear-gradient(155deg, #1f8f4e 0%, #1a7a45 100%);
   border-color: rgba(52, 211, 153, 0.25);
   color: #ecfdf5;
 }
 
 button.vt-domain-badge[data-vt-risk='clean'] .vt-badge-glyph,
-button.vt-ip-badge[data-vt-risk='clean'] .vt-badge-glyph {
+button.vt-ip-badge[data-vt-risk='clean'] .vt-badge-glyph,
+button.vt-url-badge[data-vt-risk='clean'] .vt-badge-glyph,
+button.vt-hash-badge[data-vt-risk='clean'] .vt-badge-glyph {
   color: #d1fae5;
 }
 
 button.vt-domain-badge[data-vt-risk='suspicious'],
-button.vt-ip-badge[data-vt-risk='suspicious'] {
+button.vt-ip-badge[data-vt-risk='suspicious'],
+button.vt-url-badge[data-vt-risk='suspicious'],
+button.vt-hash-badge[data-vt-risk='suspicious'] {
   background: linear-gradient(155deg, #b38a00 0%, #9a7600 100%);
   border-color: rgba(251, 191, 36, 0.35);
   color: #fffbeb;
 }
 
 button.vt-domain-badge[data-vt-risk='suspicious'] .vt-badge-glyph,
-button.vt-ip-badge[data-vt-risk='suspicious'] .vt-badge-glyph {
+button.vt-ip-badge[data-vt-risk='suspicious'] .vt-badge-glyph,
+button.vt-url-badge[data-vt-risk='suspicious'] .vt-badge-glyph,
+button.vt-hash-badge[data-vt-risk='suspicious'] .vt-badge-glyph {
   color: #fef3c7;
 }
 
 button.vt-domain-badge[data-vt-risk='malicious'],
-button.vt-ip-badge[data-vt-risk='malicious'] {
+button.vt-ip-badge[data-vt-risk='malicious'],
+button.vt-url-badge[data-vt-risk='malicious'],
+button.vt-hash-badge[data-vt-risk='malicious'] {
   background: linear-gradient(155deg, #c62828 0%, #a61f1f 100%);
   border-color: rgba(248, 113, 113, 0.35);
   color: #fff;
 }
 
 button.vt-domain-badge[data-vt-risk='malicious'] .vt-badge-glyph,
-button.vt-ip-badge[data-vt-risk='malicious'] .vt-badge-glyph {
+button.vt-ip-badge[data-vt-risk='malicious'] .vt-badge-glyph,
+button.vt-url-badge[data-vt-risk='malicious'] .vt-badge-glyph,
+button.vt-hash-badge[data-vt-risk='malicious'] .vt-badge-glyph {
   color: #fee2e2;
 }
 
 button.vt-domain-badge[data-vt-risk='unknown'],
-button.vt-ip-badge[data-vt-risk='unknown'] {
+button.vt-ip-badge[data-vt-risk='unknown'],
+button.vt-url-badge[data-vt-risk='unknown'],
+button.vt-hash-badge[data-vt-risk='unknown'] {
   background: #6b7280;
   color: #f1f5f9;
 }
 
 button.vt-domain-badge[data-vt-risk='unknown'] .vt-badge-glyph,
-button.vt-ip-badge[data-vt-risk='unknown'] .vt-badge-glyph {
+button.vt-ip-badge[data-vt-risk='unknown'] .vt-badge-glyph,
+button.vt-url-badge[data-vt-risk='unknown'] .vt-badge-glyph,
+button.vt-hash-badge[data-vt-risk='unknown'] .vt-badge-glyph {
   color: #e2e8f0;
 }
 

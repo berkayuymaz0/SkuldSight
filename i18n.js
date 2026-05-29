@@ -151,6 +151,11 @@
       optPresetAbbrAbuseScore:
         'Threat label: ≥75 malicious, ≥50 suspicious. Visual tiers: ≤24 low, ≤49 medium, ≤74 high, ≥75 critical.',
       ipBadgeButtonTitle: 'PixelPaw SOC: {ip}',
+      urlBadgeButtonTitle: 'PixelPaw SOC / VirusTotal: {url}',
+      hashBadgeButtonTitle: 'PixelPaw SOC / VirusTotal: {hash}',
+      optContentIocBadges: 'Enable on-page IOC detection (badges)',
+      optContentIocBadgesHint:
+        'Highlight URLs, IPs, domains, and file hashes in page text with scan badges.',
       panelAbuseScore: 'Abuse score',
       panelAbuseReports: 'Abuse reports',
       panelAbuseOpen: 'Open AbuseIPDB',
@@ -602,6 +607,11 @@
       optPresetAbbrAbuseScore:
         'Tehdit etiketi: ≥75 zararlı, ≥50 şüpheli. Görsel katman: ≤24 düşük, ≤49 orta, ≤74 yüksek, ≥75 kritik.',
       ipBadgeButtonTitle: 'PixelPaw SOC: {ip}',
+      urlBadgeButtonTitle: 'PixelPaw SOC / VirusTotal: {url}',
+      hashBadgeButtonTitle: 'PixelPaw SOC / VirusTotal: {hash}',
+      optContentIocBadges: 'Sayfa içi IoC tespitini etkinleştir (rozetler)',
+      optContentIocBadgesHint:
+        'Sayfa metnindeki URL, IP, alan adı ve dosya hash değerlerini tarama rozetiyle vurgular.',
       panelAbuseScore: 'Abuse skoru',
       panelAbuseReports: 'Abuse raporları',
       panelAbuseOpen: 'AbuseIPDB aç',

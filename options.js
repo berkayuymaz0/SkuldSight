@@ -40,6 +40,7 @@
     notifyQueued: document.getElementById('notify-queued'),
     notifyNews: document.getElementById('notify-news'),
     notifyContext: document.getElementById('notify-context'),
+    contentIocBadges: document.getElementById('content-ioc-badges'),
     blacklist: document.getElementById('domain-badge-blacklist'),
     btnClearHistory: document.getElementById('btn-clear-history'),
     btnClearBatch: document.getElementById('btn-clear-batch'),
@@ -1181,6 +1182,7 @@
       'vtNotifyQueued',
       'vtNotifyNews',
       'vtNotifyContext',
+      'vtContentIocBadges',
       'vtDomainBadgeBlacklist',
       'vtPopupTheme',
       'abuseipdbApiKey',
@@ -1223,6 +1225,9 @@
       dom.notifyQueued.checked = data.vtNotifyQueued !== false;
       dom.notifyNews.checked = data.vtNotifyNews !== false;
       dom.notifyContext.checked = data.vtNotifyContext !== false;
+      if (dom.contentIocBadges) {
+        dom.contentIocBadges.checked = data.vtContentIocBadges !== false;
+      }
       if (dom.blacklist) {
         dom.blacklist.value = String(data.vtDomainBadgeBlacklist || '');
       }
@@ -1366,7 +1371,8 @@
         vtBatchUseAbuse: dom.batchUseAbuse ? !!dom.batchUseAbuse.checked : true,
         vtNotifyQueued: !!dom.notifyQueued.checked,
         vtNotifyNews: !!dom.notifyNews.checked,
-        vtNotifyContext: !!dom.notifyContext.checked
+        vtNotifyContext: !!dom.notifyContext.checked,
+        vtContentIocBadges: dom.contentIocBadges ? !!dom.contentIocBadges.checked : true
       },
       function () {
         setButtonBusy(submitBtn, false);
@@ -1613,6 +1619,9 @@
     }
     if (changes.vtNotifyContext && dom.notifyContext) {
       dom.notifyContext.checked = changes.vtNotifyContext.newValue !== false;
+    }
+    if (changes.vtContentIocBadges && dom.contentIocBadges) {
+      dom.contentIocBadges.checked = changes.vtContentIocBadges.newValue !== false;
     }
     if (changes.vtDomainBadgeBlacklist && dom.blacklist) {
       dom.blacklist.value = String(changes.vtDomainBadgeBlacklist.newValue || '');

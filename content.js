@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Content script: detect visible domains and public IPs, add badges, and open a mini result panel.
+ * Content script: detect visible URLs, IPs, domains, and file hashes; add badges; open mini panel.
  */
 (function () {
   const socUtils = typeof window !== 'undefined' ? window.VtSocUtils : null;
@@ -11,6 +11,24 @@
   const IP_BTN_ATTR = 'data-vt-ip-badge';
   const IP_VALUE_ATTR = 'data-vt-ip-value';
   const IP_TOKEN_ATTR = 'data-vt-ip-token';
+  const URL_BTN_ATTR = 'data-vt-url-badge';
+  const URL_VALUE_ATTR = 'data-vt-url-value';
+  const URL_TOKEN_ATTR = 'data-vt-url-token';
+  const HASH_BTN_ATTR = 'data-vt-hash-badge';
+  const HASH_VALUE_ATTR = 'data-vt-hash-value';
+  const HASH_TOKEN_ATTR = 'data-vt-hash-token';
+  const BADGE_ATTR_BY_KIND = {
+    domain: { btn: DOMAIN_BTN_ATTR, val: DOMAIN_VALUE_ATTR },
+    ip: { btn: IP_BTN_ATTR, val: IP_VALUE_ATTR },
+    url: { btn: URL_BTN_ATTR, val: URL_VALUE_ATTR },
+    file: { btn: HASH_BTN_ATTR, val: HASH_VALUE_ATTR }
+  };
+  const TOKEN_ATTR_BY_KIND = {
+    domain: DOMAIN_TOKEN_ATTR,
+    ip: IP_TOKEN_ATTR,
+    url: URL_TOKEN_ATTR,
+    file: HASH_TOKEN_ATTR
+  };
   const MAX_BADGES = 120;
   const DOMAIN_TEXT_RE = /\b(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}\b/gi;
   const IPV4_OCTET = '(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)';
@@ -31,12 +49,15 @@
   let badgeCount = 0;
   let domainScanDebounceTimer = null;
   let contentTheme = 'dark';
+  let contentIocBadgesEnabled = true;
   let panelLastScanResult = null;
   const pendingMutationRoots = new Set();
 
   function applyContentTheme(theme) {
     contentTheme = theme === 'light' ? 'light' : 'dark';
-    document.querySelectorAll('.vt-domain-badge, .vt-ip-badge').forEach(function (btn) {
+    document
+      .querySelectorAll('.vt-domain-badge, .vt-ip-badge, .vt-url-badge, .vt-hash-badge')
+      .forEach(function (btn) {
       btn.setAttribute('data-vt-theme', contentTheme);
     });
     if (domainPanel) {
@@ -60,12 +81,13 @@
   }
 
   chrome.storage.local.get(
-    ['vtUiLang', 'vtDomainBadgeBlacklist', 'vtPopupTheme'],
+    ['vtUiLang', 'vtDomainBadgeBlacklist', 'vtPopupTheme', 'vtContentIocBadges'],
     function (d) {
       syncContentLang(d.vtUiLang === 'tr');
       applyContentTheme(d.vtPopupTheme === 'light' ? 'light' : 'dark');
       blacklistRules = parseBlacklistRules(d.vtDomainBadgeBlacklist);
-      applyBlacklistState();
+      contentIocBadgesEnabled = d.vtContentIocBadges !== false;
+      applyContentIocSettings();
     }
   );
 
@@ -81,7 +103,11 @@
     }
     if (changes.vtDomainBadgeBlacklist) {
       blacklistRules = parseBlacklistRules(changes.vtDomainBadgeBlacklist.newValue);
-      applyBlacklistState();
+      applyContentIocSettings();
+    }
+    if (changes.vtContentIocBadges) {
+      contentIocBadgesEnabled = changes.vtContentIocBadges.newValue !== false;
+      applyContentIocSettings();
     }
   });
 
@@ -233,7 +259,37 @@
     svg.setAttribute('height', '11');
     svg.setAttribute('aria-hidden', 'true');
     svg.setAttribute('focusable', 'false');
-    if (kind === 'domain') {
+    if (kind === 'url') {
+      const path = document.createElementNS(ns, 'path');
+      path.setAttribute(
+        'd',
+        'M6.2 8.75H9.8M8 6.95v3.6M4.5 5.2a5.5 5.5 0 0 1 7 0M4.5 10.8a5.5 5.5 0 0 0 7 0'
+      );
+      path.setAttribute('fill', 'none');
+      path.setAttribute('stroke', 'currentColor');
+      path.setAttribute('stroke-width', '1.1');
+      path.setAttribute('stroke-linecap', 'round');
+      path.setAttribute('stroke-linejoin', 'round');
+      svg.appendChild(path);
+    } else if (kind === 'file') {
+      const rect = document.createElementNS(ns, 'rect');
+      rect.setAttribute('x', '3.25');
+      rect.setAttribute('y', '2.75');
+      rect.setAttribute('width', '9.5');
+      rect.setAttribute('height', '10.5');
+      rect.setAttribute('rx', '1.2');
+      rect.setAttribute('fill', 'none');
+      rect.setAttribute('stroke', 'currentColor');
+      rect.setAttribute('stroke-width', '1.1');
+      const line1 = document.createElementNS(ns, 'path');
+      line1.setAttribute('d', 'M5.5 6.25h5M5.5 8.25h5M5.5 10.25h3.2');
+      line1.setAttribute('fill', 'none');
+      line1.setAttribute('stroke', 'currentColor');
+      line1.setAttribute('stroke-width', '1');
+      line1.setAttribute('stroke-linecap', 'round');
+      svg.appendChild(rect);
+      svg.appendChild(line1);
+    } else if (kind === 'domain') {
       const circle = document.createElementNS(ns, 'circle');
       circle.setAttribute('cx', '8');
       circle.setAttribute('cy', '8');
@@ -311,11 +367,13 @@
   }
 
   function applyBadgeRiskStateForAll(kind, value, payload) {
-    const btnAttr = kind === 'ip' ? IP_BTN_ATTR : DOMAIN_BTN_ATTR;
-    const valAttr = kind === 'ip' ? IP_VALUE_ATTR : DOMAIN_VALUE_ATTR;
+    const attrs = BADGE_ATTR_BY_KIND[kind];
+    if (!attrs) {
+      return;
+    }
     const norm = String(value || '').toLowerCase();
-    document.querySelectorAll('[' + btnAttr + '="1"]').forEach(function (btn) {
-      const v = String(btn.getAttribute(valAttr) || '').toLowerCase();
+    document.querySelectorAll('[' + attrs.btn + '="1"]').forEach(function (btn) {
+      const v = String(btn.getAttribute(attrs.val) || '').toLowerCase();
       if (v === norm) {
         applyBadgeRiskState(btn, payload);
       }
@@ -348,6 +406,45 @@
     btn.appendChild(createBadgeIconSvg('ip'));
     btn.addEventListener('click', onIpBadgeClick, true);
     return btn;
+  }
+
+  function createUrlBadge(url) {
+    badgeCount += 1;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.setAttribute(URL_BTN_ATTR, '1');
+    btn.setAttribute(URL_VALUE_ATTR, url);
+    btn.title = ct('urlBadgeButtonTitle', { url: url });
+    btn.className = 'vt-url-badge vt-badge-pending';
+    btn.setAttribute('data-vt-theme', contentTheme);
+    btn.appendChild(createBadgeIconSvg('url'));
+    btn.addEventListener('click', onUrlBadgeClick, true);
+    return btn;
+  }
+
+  function createHashBadge(hash) {
+    badgeCount += 1;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.setAttribute(HASH_BTN_ATTR, '1');
+    btn.setAttribute(HASH_VALUE_ATTR, hash);
+    btn.title = ct('hashBadgeButtonTitle', { hash: hash });
+    btn.className = 'vt-hash-badge vt-badge-pending';
+    btn.setAttribute('data-vt-theme', contentTheme);
+    btn.appendChild(createBadgeIconSvg('file'));
+    btn.addEventListener('click', onHashBadgeClick, true);
+    return btn;
+  }
+
+  function panelDisplayLabel(iocKind, value) {
+    const v = String(value || '');
+    if (iocKind === 'file' && socUtils && socUtils.shortenHash) {
+      return socUtils.shortenHash(v);
+    }
+    if (iocKind === 'url' && v.length > 56) {
+      return v.slice(0, 48) + '…' + v.slice(-8);
+    }
+    return v;
   }
 
   // Sabit konumlu mini sonuç paneli öğesini bir kez oluşturup document’e ekler.
@@ -384,11 +481,25 @@
     document.querySelectorAll('[' + IP_BTN_ATTR + '="1"]').forEach(function (el) {
       el.remove();
     });
+    document.querySelectorAll('[' + URL_BTN_ATTR + '="1"]').forEach(function (el) {
+      el.remove();
+    });
+    document.querySelectorAll('[' + HASH_BTN_ATTR + '="1"]').forEach(function (el) {
+      el.remove();
+    });
     document.querySelectorAll('[' + DOMAIN_TOKEN_ATTR + '="1"]').forEach(function (el) {
       const txt = document.createTextNode(el.textContent || '');
       el.replaceWith(txt);
     });
     document.querySelectorAll('[' + IP_TOKEN_ATTR + '="1"]').forEach(function (el) {
+      const txt = document.createTextNode(el.textContent || '');
+      el.replaceWith(txt);
+    });
+    document.querySelectorAll('[' + URL_TOKEN_ATTR + '="1"]').forEach(function (el) {
+      const txt = document.createTextNode(el.textContent || '');
+      el.replaceWith(txt);
+    });
+    document.querySelectorAll('[' + HASH_TOKEN_ATTR + '="1"]').forEach(function (el) {
       const txt = document.createTextNode(el.textContent || '');
       el.replaceWith(txt);
     });
@@ -409,9 +520,8 @@
     observer = null;
   }
 
-  // Kara listeye göre rozetleri ya tamamen kaldırır ya da gözlemci ile taramayı yeniden başlatır.
-  function applyBlacklistState() {
-    if (isCurrentPageBlacklisted()) {
+  function applyContentIocSettings() {
+    if (!contentIocBadgesEnabled || isCurrentPageBlacklisted()) {
       stopDomainObserver();
       clearDomainDecorations();
       return;
@@ -764,7 +874,8 @@
     if (cached && cached.ok) {
       panelLastScanResult = cached;
       const panel = ensureDomainPanel();
-      panel.innerHTML = panelHtmlResult(value, cached, iocKind);
+      const label = panelDisplayLabel(iocKind, value);
+      panel.innerHTML = panelHtmlResult(label, cached, iocKind);
       attachPanelHandlers(value);
       positionPanelNear(anchorBtn);
       applyBadgeRiskStateForAll(iocKind, value, cached);
@@ -775,8 +886,9 @@
 
   function runInlineScan(iocKind, value, anchorBtn) {
     const panel = ensureDomainPanel();
+    const label = panelDisplayLabel(iocKind, value);
     panelLastScanResult = null;
-    panel.innerHTML = panelHtmlLoading(value);
+    panel.innerHTML = panelHtmlLoading(label);
     attachPanelHandlers(value);
     positionPanelNear(anchorBtn);
     wakeServiceWorkerThen(function () {
@@ -791,14 +903,14 @@
         if (!res || !res.ok) {
           panelLastScanResult = null;
           panel.innerHTML = panelHtmlError(
-            value,
+            label,
             res && res.error ? res.error : ct('domainBadgeScanFailed')
           );
         } else {
           panelLastScanResult = res;
           inlineScanCache.set(inlineCacheKey(iocKind, value), res);
           applyBadgeRiskStateForAll(iocKind, value, res);
-          panel.innerHTML = panelHtmlResult(value, res, iocKind);
+          panel.innerHTML = panelHtmlResult(label, res, iocKind);
         }
         attachPanelHandlers(value);
         positionPanelNear(anchorBtn);
@@ -840,6 +952,28 @@
     showCachedOrScanPanel('ip', ip, btn);
   }
 
+  function onUrlBadgeClick(ev) {
+    ev.preventDefault();
+    ev.stopPropagation();
+    const btn = ev.currentTarget;
+    const url = btn && btn.getAttribute(URL_VALUE_ATTR);
+    if (!url) {
+      return;
+    }
+    showCachedOrScanPanel('url', url, btn);
+  }
+
+  function onHashBadgeClick(ev) {
+    ev.preventDefault();
+    ev.stopPropagation();
+    const btn = ev.currentTarget;
+    const hash = btn && btn.getAttribute(HASH_VALUE_ATTR);
+    if (!hash) {
+      return;
+    }
+    showCachedOrScanPanel('file', hash, btn);
+  }
+
   // Metin düğümünün rozetleme için uygun olup olmadığını (script/input vb. hariç) kontrol eder.
   function shouldSkipTextNode(node) {
     if (!node || !node.parentElement) {
@@ -860,101 +994,69 @@
     if (p.closest('[' + IP_TOKEN_ATTR + '="1"]')) {
       return true;
     }
+    if (p.closest('[' + URL_TOKEN_ATTR + '="1"]')) {
+      return true;
+    }
+    if (p.closest('[' + HASH_TOKEN_ATTR + '="1"]')) {
+      return true;
+    }
     if (p.closest('[' + DOMAIN_BTN_ATTR + '="1"]')) {
       return true;
     }
     if (p.closest('[' + IP_BTN_ATTR + '="1"]')) {
       return true;
     }
+    if (p.closest('[' + URL_BTN_ATTR + '="1"]')) {
+      return true;
+    }
+    if (p.closest('[' + HASH_BTN_ATTR + '="1"]')) {
+      return true;
+    }
     return false;
   }
 
-  function decorateIpsInTextNode(textNode) {
-    if (badgeCount >= MAX_BADGES) {
-      return false;
+  function overlapsRange(range, occupied) {
+    if (socUtils && socUtils.overlapsAny) {
+      return socUtils.overlapsAny(range, occupied);
     }
-    const original = String(textNode.nodeValue || '');
+    for (let i = 0; i < occupied.length; i++) {
+      if (range.start < occupied[i].end && occupied[i].start < range.end) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function collectIocRanges(original) {
+    const occupied = [];
+    const ranges = [];
+
+    function addRange(r) {
+      if (overlapsRange(r, occupied)) {
+        return;
+      }
+      occupied.push(r);
+      ranges.push(r);
+    }
+
+    if (socUtils && socUtils.findUrlsInText) {
+      socUtils.findUrlsInText(original).forEach(function (u) {
+        addRange({ start: u.start, end: u.end, value: u.value, kind: 'url' });
+      });
+    }
+
     COMBINED_IP_RE.lastIndex = 0;
     let m = null;
-    let lastIndex = 0;
-    let changed = false;
-    const frag = document.createDocumentFragment();
     while ((m = COMBINED_IP_RE.exec(original))) {
-      if (badgeCount >= MAX_BADGES) {
-        break;
-      }
       const ip = m[0];
-      const start = m.index;
-      const end = start + ip.length;
       if (!isSupportedPublicIP(ip)) {
         continue;
       }
-      if (start > lastIndex) {
-        frag.appendChild(document.createTextNode(original.slice(lastIndex, start)));
-      }
-      const wrap = document.createElement('span');
-      wrap.setAttribute(IP_TOKEN_ATTR, '1');
-      wrap.style.whiteSpace = 'nowrap';
-      wrap.appendChild(document.createTextNode(ip));
-      wrap.appendChild(createIpBadge(ip));
-      frag.appendChild(wrap);
-      lastIndex = end;
-      changed = true;
+      addRange({ start: m.index, end: m.index + ip.length, value: ip, kind: 'ip' });
     }
-    if (!changed) {
-      return false;
-    }
-    if (lastIndex < original.length) {
-      frag.appendChild(document.createTextNode(original.slice(lastIndex)));
-    }
-    textNode.parentNode.replaceChild(frag, textNode);
-    return true;
-  }
 
-  function processVisibleTextIps(root) {
-    const base =
-      root && root.nodeType === Node.ELEMENT_NODE
-        ? root
-        : document.body || document.documentElement;
-    if (!base) {
-      return;
-    }
-    const walker = document.createTreeWalker(base, NodeFilter.SHOW_TEXT);
-    const nodes = [];
-    while (walker.nextNode()) {
-      const n = walker.currentNode;
-      if (shouldSkipTextNode(n)) {
-        continue;
-      }
-      COMBINED_IP_RE.lastIndex = 0;
-      if (!COMBINED_IP_RE.test(n.nodeValue || '')) {
-        continue;
-      }
-      nodes.push(n);
-    }
-    for (let i = 0; i < nodes.length; i++) {
-      if (badgeCount >= MAX_BADGES) {
-        break;
-      }
-      decorateIpsInTextNode(nodes[i]);
-    }
-  }
-
-  // Bir metin düğümündeki alan adı eşleşmelerini span + rozet ile böler (üst sınır: MAX_BADGES).
-  function decorateDomainsInTextNode(textNode) {
-    if (badgeCount >= MAX_BADGES) {
-      return false;
-    }
-    const original = String(textNode.nodeValue || '');
     DOMAIN_TEXT_RE.lastIndex = 0;
-    let m = null;
-    let lastIndex = 0;
-    let changed = false;
-    const frag = document.createDocumentFragment();
     while ((m = DOMAIN_TEXT_RE.exec(original))) {
-      if (badgeCount >= MAX_BADGES) {
-        break;
-      }
       const full = m[0];
       const start = m.index;
       const end = start + full.length;
@@ -966,20 +1068,70 @@
       if (!isDomainCandidate(domain)) {
         continue;
       }
-      if (start > lastIndex) {
-        frag.appendChild(document.createTextNode(original.slice(lastIndex, start)));
-      }
-      const wrap = document.createElement('span');
-      wrap.setAttribute(DOMAIN_TOKEN_ATTR, '1');
-      wrap.style.whiteSpace = 'nowrap';
-      wrap.appendChild(document.createTextNode(full));
-      wrap.appendChild(createDomainBadge(domain));
-      frag.appendChild(wrap);
-      lastIndex = end;
-      changed = true;
+      addRange({ start: start, end: end, value: domain, kind: 'domain', display: full });
     }
-    if (!changed) {
+
+    if (socUtils && socUtils.findFileHashesInText) {
+      socUtils.findFileHashesInText(original).forEach(function (h) {
+        addRange({ start: h.start, end: h.end, value: h.value, kind: 'file' });
+      });
+    }
+
+    ranges.sort(function (a, b) {
+      return a.start - b.start;
+    });
+    return ranges;
+  }
+
+  function createBadgeForRange(r) {
+    if (r.kind === 'url') {
+      return createUrlBadge(r.value);
+    }
+    if (r.kind === 'ip') {
+      return createIpBadge(r.value);
+    }
+    if (r.kind === 'domain') {
+      return createDomainBadge(r.value);
+    }
+    if (r.kind === 'file') {
+      return createHashBadge(r.value);
+    }
+    return null;
+  }
+
+  function decorateTextNodeWithIocs(textNode) {
+    if (badgeCount >= MAX_BADGES) {
       return false;
+    }
+    const original = String(textNode.nodeValue || '');
+    const ranges = collectIocRanges(original);
+    if (!ranges.length) {
+      return false;
+    }
+    let lastIndex = 0;
+    const frag = document.createDocumentFragment();
+    for (let i = 0; i < ranges.length; i++) {
+      if (badgeCount >= MAX_BADGES) {
+        break;
+      }
+      const r = ranges[i];
+      if (r.start > lastIndex) {
+        frag.appendChild(document.createTextNode(original.slice(lastIndex, r.start)));
+      }
+      const displayText = r.display || original.slice(r.start, r.end);
+      const tokenAttr = TOKEN_ATTR_BY_KIND[r.kind];
+      const wrap = document.createElement('span');
+      if (tokenAttr) {
+        wrap.setAttribute(tokenAttr, '1');
+      }
+      wrap.style.whiteSpace = 'nowrap';
+      wrap.appendChild(document.createTextNode(displayText));
+      const btn = createBadgeForRange(r);
+      if (btn) {
+        wrap.appendChild(btn);
+      }
+      frag.appendChild(wrap);
+      lastIndex = r.end;
     }
     if (lastIndex < original.length) {
       frag.appendChild(document.createTextNode(original.slice(lastIndex)));
@@ -988,8 +1140,14 @@
     return true;
   }
 
-  // Verilen kök altındaki görünür metin düğümlerinde alan adı rozetlemesi uygular.
-  function processVisibleTextDomains(root) {
+  function textNodeMayContainIoc(text) {
+    const s = String(text || '');
+    return /https?:\/\/|hxxps?:\/\/|hxxp:\/\/|\b(?:\d{1,3}\.){3}\d{1,3}\b|(?:[a-z0-9-]+\.)+[a-z]{2,63}\b|[a-fA-F0-9]{32,64}/i.test(
+      s
+    );
+  }
+
+  function processVisibleTextIocs(root) {
     const base =
       root && root.nodeType === Node.ELEMENT_NODE
         ? root
@@ -1004,8 +1162,7 @@
       if (shouldSkipTextNode(n)) {
         continue;
       }
-      DOMAIN_TEXT_RE.lastIndex = 0;
-      if (!DOMAIN_TEXT_RE.test(n.nodeValue || '')) {
+      if (!textNodeMayContainIoc(n.nodeValue || '')) {
         continue;
       }
       nodes.push(n);
@@ -1014,14 +1171,14 @@
       if (badgeCount >= MAX_BADGES) {
         break;
       }
-      decorateDomainsInTextNode(nodes[i]);
+      decorateTextNodeWithIocs(nodes[i]);
     }
   }
 
   // Debounce sonunda biriken mutasyon köklerinde veya tüm belgede domain taramasını çalıştırır.
   function flushPendingDomainScan() {
     domainScanDebounceTimer = null;
-    if (isCurrentPageBlacklisted()) {
+    if (!contentIocBadgesEnabled || isCurrentPageBlacklisted()) {
       pendingMutationRoots.clear();
       return;
     }
@@ -1031,8 +1188,7 @@
       return;
     }
     if (pendingMutationRoots.size === 0) {
-      processVisibleTextIps(docRoot);
-      processVisibleTextDomains(docRoot);
+      processVisibleTextIocs(docRoot);
       return;
     }
     const roots = Array.from(pendingMutationRoots);
@@ -1049,8 +1205,7 @@
       if (!docRoot.contains(el)) {
         continue;
       }
-      processVisibleTextIps(el);
-      processVisibleTextDomains(el);
+      processVisibleTextIocs(el);
     }
     if (roots.length > flushCount) {
       for (let i = flushCount; i < roots.length; i++) {
@@ -1062,7 +1217,7 @@
 
   // Alan adı taramasını kısa gecikmeyle tek seferde birleştirerek (debounce) zamanlar.
   function scheduleDomainScan() {
-    if (isCurrentPageBlacklisted()) {
+    if (!contentIocBadgesEnabled || isCurrentPageBlacklisted()) {
       return;
     }
     if (domainScanDebounceTimer !== null) {
@@ -1097,7 +1252,7 @@
 
   // İlk tam taramayı yapar ve document üzerinde MutationObserver ile dinamik içeriği izler.
   function startDomainObserver() {
-    if (observer || isCurrentPageBlacklisted()) {
+    if (observer || !contentIocBadgesEnabled || isCurrentPageBlacklisted()) {
       return;
     }
     pendingMutationRoots.clear();
@@ -1106,8 +1261,7 @@
       domainScanDebounceTimer = null;
     }
     const docRoot = document.body || document.documentElement;
-    processVisibleTextIps(docRoot);
-    processVisibleTextDomains(docRoot);
+    processVisibleTextIocs(docRoot);
     observer = new MutationObserver(onMutationForDomains);
     observer.observe(document.documentElement || document.body, {
       childList: true,
@@ -1139,7 +1293,9 @@
       if (
         (t && t.closest && t.closest('[data-vt-domain-panel="1"]')) ||
         (t && t.closest && t.closest('[' + DOMAIN_BTN_ATTR + '="1"]')) ||
-        (t && t.closest && t.closest('[' + IP_BTN_ATTR + '="1"]'))
+        (t && t.closest && t.closest('[' + IP_BTN_ATTR + '="1"]')) ||
+        (t && t.closest && t.closest('[' + URL_BTN_ATTR + '="1"]')) ||
+        (t && t.closest && t.closest('[' + HASH_BTN_ATTR + '="1"]'))
       ) {
         return;
       }
@@ -1148,5 +1304,5 @@
     true
   );
 
-  applyBlacklistState();
+  applyContentIocSettings();
 })();

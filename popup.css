@@ -1844,8 +1844,13 @@ html::-webkit-scrollbar-thumb:hover {
 }
 
 .result-threat-card--vt {
+  position: relative;
   border-color: rgba(56, 189, 248, 0.22);
   background: rgba(14, 116, 144, 0.1);
+}
+
+.result-threat-card--vt .result-threat-card-head {
+  padding-right: 2rem;
 }
 
 .result-threat-card--abuse {
@@ -1940,6 +1945,78 @@ html::-webkit-scrollbar-thumb:hover {
 
 .result-provider-pill.is-neutral {
   color: var(--muted);
+}
+
+.result-chart-head {
+  margin-bottom: 6px;
+}
+
+.result-chart-head .result-chart-caption {
+  margin: 0;
+}
+
+.btn-vt-reanalyze {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
+  z-index: 2;
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  min-height: 26px;
+  border-radius: 8px;
+  font-size: 0;
+  color: var(--muted);
+  opacity: 0.9;
+}
+
+.btn-vt-reanalyze:hover {
+  color: var(--accent, #38bdf8);
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+.btn-vt-reanalyze[aria-busy='true'] {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.btn-vt-reanalyze[aria-busy='true'] svg {
+  animation: vt-reanalyze-spin 0.85s linear infinite;
+}
+
+@keyframes vt-reanalyze-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.result-vt-reanalyze-status {
+  margin: 0 0 8px;
+  padding: 7px 9px;
+  border-radius: 8px;
+  font-size: 0.68rem;
+  line-height: 1.4;
+  color: var(--text);
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+}
+
+.result-vt-reanalyze-status.is-success {
+  color: #bae6fd;
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.28);
+}
+
+.result-vt-reanalyze-status.is-error {
+  color: #fecaca;
+  background: rgba(248, 113, 113, 0.1);
+  border-color: rgba(248, 113, 113, 0.28);
+}
+
+.result-vt-reanalyze-status.is-pending {
+  color: var(--muted);
+  background: rgba(148, 163, 184, 0.08);
+  border-color: rgba(148, 163, 184, 0.2);
 }
 
 .result-chart-caption {
@@ -3402,6 +3479,18 @@ html[data-theme="light"] .result-verdict.is-clean {
 html[data-theme="light"] .result-chart-bar {
   background: rgba(226, 232, 240, 0.9);
   border-color: rgba(15, 23, 42, 0.1);
+}
+
+html[data-theme="light"] .result-vt-reanalyze-status.is-success {
+  color: #0369a1;
+  background: rgba(14, 165, 233, 0.12);
+  border-color: rgba(14, 165, 233, 0.28);
+}
+
+html[data-theme="light"] .result-vt-reanalyze-status.is-error {
+  color: #b91c1c;
+  background: rgba(248, 113, 113, 0.1);
+  border-color: rgba(248, 113, 113, 0.28);
 }
 
 html[data-theme="light"] .result-threat-card {

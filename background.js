@@ -2330,6 +2330,78 @@ async function fetchFile(hash) {
   return vtFetch('/files/' + encodeURIComponent(hash), { method: 'GET' }, { iocKind: 'file' });
 }
 
+// resolveVtObjectIdForReanalyze: VT analyse uç noktası için nesne kimliği.
+function resolveVtObjectIdForReanalyze(iocKind, ioc, vtObjectId) {
+  const stored = String(vtObjectId || '').trim();
+  if (stored) {
+    return stored;
+  }
+  const value = String(ioc || '').trim();
+  if (!value) {
+    return '';
+  }
+  if (iocKind === 'url') {
+    return urlToVtId(value);
+  }
+  if (iocKind === 'ip' || iocKind === 'domain' || iocKind === 'file') {
+    return value;
+  }
+  return '';
+}
+
+// vtReanalyzePath: IoC türüne göre VT v3 POST /analyse yolu.
+function vtReanalyzePath(iocKind, objectId) {
+  const id = encodeURIComponent(objectId);
+  if (iocKind === 'ip') {
+    return '/ip_addresses/' + id + '/analyse';
+  }
+  if (iocKind === 'domain') {
+    return '/domains/' + id + '/analyse';
+  }
+  if (iocKind === 'file') {
+    return '/files/' + id + '/analyse';
+  }
+  if (iocKind === 'url') {
+    return '/urls/' + id + '/analyse';
+  }
+  return '';
+}
+
+// requestVtReanalysis: VirusTotal'de yeniden analiz kuyruğuna alır.
+async function requestVtReanalysis(message) {
+  const iocKind = String((message && message.iocKind) || '').toLowerCase();
+  const ioc = String((message && message.ioc) || '').trim();
+  if (!ioc || ['ip', 'domain', 'url', 'file'].indexOf(iocKind) < 0) {
+    const err = new Error('Unsupported IoC for reanalysis');
+    err.errorKey = 'errorVtReanalyzeUnsupported';
+    err.errorVars = {};
+    throw err;
+  }
+  const objectId = resolveVtObjectIdForReanalyze(iocKind, ioc, message && message.vtObjectId);
+  if (!objectId) {
+    const err = new Error('Could not resolve VirusTotal object id');
+    err.errorKey = 'errorVtReanalyzeUnsupported';
+    err.errorVars = {};
+    throw err;
+  }
+  const path = vtReanalyzePath(iocKind, objectId);
+  if (!path) {
+    const err = new Error('Unsupported IoC for reanalysis');
+    err.errorKey = 'errorVtReanalyzeUnsupported';
+    err.errorVars = {};
+    throw err;
+  }
+  const json = await vtFetch(path, { method: 'POST' }, { iocKind: iocKind });
+  const analysisId = json && json.data && json.data.id ? String(json.data.id) : '';
+  return {
+    ok: true,
+    iocKind: iocKind,
+    ioc: ioc,
+    vtObjectId: objectId,
+    analysisId: analysisId
+  };
+}
+
 // fetchUrlObject: Önce GET (cache); yoksa POST + GET.
 async function fetchUrlObject(urlStr) {
   const meta = { iocKind: 'url' };
@@ -2487,6 +2559,10 @@ async function scanIoc(detected, opts) {
     rawType: data && data.data && data.data.type,
     details: details
   };
+  const vtObjectId = data && data.data && data.data.id ? String(data.data.id).trim() : '';
+  if (vtObjectId) {
+    payload.vtObjectId = vtObjectId;
+  }
   const rep = extractReputation(attrs);
   if (rep !== null) {
     payload.reputation = rep;
@@ -3097,6 +3173,16 @@ const backgroundMessageHandlers = {
       sendResponse({ entries: list });
     });
     return true;
+  },
+  VT_REANALYZE: function (message, sendResponse) {
+    return respondAsync(sendResponse, requestVtReanalysis(message), 'Reanalyze request failed', function (err) {
+      return {
+        ok: false,
+        errorKey: (err && err.errorKey) || 'errorVtReanalyzeFailed',
+        error: err && err.message ? String(err.message) : 'Reanalyze request failed',
+        errorVars: (err && err.errorVars) || {}
+      };
+    });
   },
   ENRICH_ABUSE_FOR_IP: function (message, sendResponse) {
     const ip = message && message.ip ? String(message.ip).trim() : '';

@@ -46,6 +46,8 @@
   const resultChartLegend = document.getElementById('result-chart-legend');
   const resultVtEmpty = document.getElementById('result-vt-empty');
   const resultVtPill = document.getElementById('result-vt-pill');
+  const btnVtReanalyze = document.getElementById('btn-vt-reanalyze');
+  const vtReanalyzeStatus = document.getElementById('result-vt-reanalyze-status');
   const resultAbuseCard = document.getElementById('result-abuse-card');
   const resultAbusePill = document.getElementById('result-abuse-pill');
   const resultEngineBlock = document.getElementById('result-engine-block');
@@ -156,6 +158,7 @@
   let nextBubbleKind = 'humor';
   let nextTechnicalCategoryIndex = 0;
   let batchUseAbuse = true;
+  let vtReanalyzeStatusIocKey = '';
 
   const MASCOT_BUBBLES = window.VT_MASCOT_BUBBLES || {
     tr: { humor: [], technical: {} },
@@ -740,6 +743,9 @@
     }
     lastResultPayload = null;
     syncAbuseCardVisibility(null);
+    syncVtReanalyzeButton(null);
+    clearVtReanalyzeStatus();
+    vtReanalyzeStatusIocKey = '';
   }
 
   // resolveErrorMessage: VT errorKey veya ham metinden kullanıcı mesajı.
@@ -1545,6 +1551,9 @@
       if (resultChartLegend) {
         resultChartLegend.textContent = '';
       }
+      if (resultChartRatio) {
+        clearElement(resultChartRatio);
+      }
       if (resultVtEmpty) {
         resultVtEmpty.hidden = false;
       }
@@ -1633,9 +1642,108 @@
     return true;
   }
 
+  function canVtReanalyzePayload(payload) {
+    if (!payload || payload.ok !== true || !payload.ioc || !payload.iocKind) {
+      return false;
+    }
+    return ['ip', 'domain', 'url', 'file'].indexOf(payload.iocKind) >= 0;
+  }
+
+  function clearVtReanalyzeStatus() {
+    if (!vtReanalyzeStatus) {
+      return;
+    }
+    vtReanalyzeStatus.hidden = true;
+    vtReanalyzeStatus.textContent = '';
+    vtReanalyzeStatus.classList.remove('is-success', 'is-error', 'is-pending');
+  }
+
+  function showVtReanalyzeStatus(message, tone) {
+    if (!vtReanalyzeStatus) {
+      return;
+    }
+    const msg = String(message || '').trim();
+    if (!msg) {
+      clearVtReanalyzeStatus();
+      return;
+    }
+    vtReanalyzeStatus.textContent = msg;
+    vtReanalyzeStatus.hidden = false;
+    vtReanalyzeStatus.classList.remove('is-success', 'is-error', 'is-pending');
+    if (tone === 'error') {
+      vtReanalyzeStatus.classList.add('is-error');
+    } else if (tone === 'pending') {
+      vtReanalyzeStatus.classList.add('is-pending');
+    } else {
+      vtReanalyzeStatus.classList.add('is-success');
+    }
+  }
+
+  function syncVtReanalyzeButton(payload) {
+    if (!btnVtReanalyze) {
+      return;
+    }
+    const show = canVtReanalyzePayload(payload);
+    btnVtReanalyze.hidden = !show;
+    if (!show) {
+      btnVtReanalyze.disabled = false;
+      btnVtReanalyze.removeAttribute('aria-busy');
+      clearVtReanalyzeStatus();
+      vtReanalyzeStatusIocKey = '';
+      return;
+    }
+    const statusKey = payload.iocKind + ':' + payload.ioc;
+    if (statusKey !== vtReanalyzeStatusIocKey) {
+      clearVtReanalyzeStatus();
+      vtReanalyzeStatusIocKey = statusKey;
+    }
+    btnVtReanalyze.disabled = false;
+    btnVtReanalyze.removeAttribute('aria-busy');
+    btnVtReanalyze.title = t('vtReanalyzeTitle');
+    btnVtReanalyze.setAttribute('aria-label', t('vtReanalyzeTitle'));
+  }
+
+  function handleVtReanalyzeClick() {
+    const payload = lastResultPayload;
+    if (!canVtReanalyzePayload(payload)) {
+      return;
+    }
+    if (btnVtReanalyze) {
+      btnVtReanalyze.disabled = true;
+      btnVtReanalyze.setAttribute('aria-busy', 'true');
+    }
+    showVtReanalyzeStatus(t('vtReanalyzePending'), 'pending');
+    sendToBackground(
+      {
+        type: 'VT_REANALYZE',
+        iocKind: payload.iocKind,
+        ioc: payload.ioc,
+        vtObjectId: payload.vtObjectId || ''
+      },
+      function (res, err) {
+        if (btnVtReanalyze) {
+          btnVtReanalyze.disabled = false;
+          btnVtReanalyze.removeAttribute('aria-busy');
+        }
+        if (err) {
+          showVtReanalyzeStatus(t('errorVtReanalyzeFailed'), 'error');
+          return;
+        }
+        if (res && res.ok) {
+          showVtReanalyzeStatus(t('vtReanalyzeQueued'), 'success');
+          return;
+        }
+        const key = res && res.errorKey ? res.errorKey : 'errorVtReanalyzeFailed';
+        const vars = res && res.errorVars && typeof res.errorVars === 'object' ? res.errorVars : {};
+        showVtReanalyzeStatus(t(key, vars), 'error');
+      }
+    );
+  }
+
   function renderThreatDashboard(payload) {
     const isIp = isIpScanPayload(payload);
     syncAbuseCardVisibility(payload);
+    syncVtReanalyzeButton(payload);
     const hasVt = renderResultChart(payload.stats, payload.threatLevel);
     const hasAbuseData = isIp && !!payload.abuseipdb;
 
@@ -3614,6 +3722,10 @@
       const next = VT_I18N.lang() === 'tr' ? 'en' : 'tr';
       setUiLang(next, true);
     });
+  }
+
+  if (btnVtReanalyze) {
+    btnVtReanalyze.addEventListener('click', handleVtReanalyzeClick);
   }
 
   if (btnCopySummary) {

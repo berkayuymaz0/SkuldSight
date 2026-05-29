@@ -248,6 +248,20 @@
               class="result-threat-card result-threat-card--vt"
               aria-labelledby="result-vt-heading"
             >
+              <button
+                type="button"
+                id="btn-vt-reanalyze"
+                class="btn-icon btn-vt-reanalyze"
+                hidden
+                data-i18n-title="vtReanalyzeTitle"
+                data-i18n-aria-label="vtReanalyzeTitle"
+                aria-label="Queue a new VirusTotal analysis for this IoC"
+              >
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M21 12a9 9 0 1 1-2.64-6.36"></path>
+                  <path d="M21 3v6h-6"></path>
+                </svg>
+              </button>
               <header class="result-threat-card-head" id="result-vt-heading">
                 <div class="result-provider-brand">
                   <span class="result-provider-logo result-provider-logo--vt" aria-hidden="true">VT</span>
@@ -255,8 +269,11 @@
                 </div>
                 <span id="result-vt-pill" class="result-provider-pill" hidden></span>
               </header>
-              <div id="result-chart" class="result-chart" hidden>
+              <div class="result-chart-head">
                 <p class="result-chart-caption" data-i18n="resultVtEnginesCaption">Engine detections</p>
+              </div>
+              <p id="result-vt-reanalyze-status" class="result-vt-reanalyze-status" hidden aria-live="polite"></p>
+              <div id="result-chart" class="result-chart" hidden>
                 <div class="result-chart-meta">
                   <span class="result-chart-ratio" id="result-chart-ratio" aria-live="polite"></span>
                 </div>

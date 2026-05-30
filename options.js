@@ -5,9 +5,10 @@
 (function () {
   const utils = window.VtSocUtils;
   const SVG_NS = 'http://www.w3.org/2000/svg';
-  const SCAN_PRESETS_KEY = 'vtScanPresets';
-  const COPY_SUMMARY_FIELDS_KEY = 'vtCopySummaryFields';
-  const ANALYTICS_KEY = 'vtAnalytics';
+  const SK = utils.STORAGE_KEYS;
+  const SCAN_PRESETS_KEY = SK.scanPresets;
+  const COPY_SUMMARY_FIELDS_KEY = SK.copySummaryFields;
+  const ANALYTICS_KEY = SK.analytics;
   /** Keys read together for the analytics section (avoid duplicate storage reads on theme-only updates). */
   const OPTIONS_DASHBOARD_KEYS = [ANALYTICS_KEY, 'vtBatchHistory'];
   const KIND_ORDER = ['ip', 'domain', 'url', 'file'];
@@ -123,6 +124,7 @@
 
   // data-i18n özniteliklerine ve başlığa seçili dile göre metin basar; hız etiketini günceller.
   function applyOptionsLang() {
+    document.documentElement.lang = VT_I18N.lang();
     utils.applyI18n(document, t, {
       titleKey: 'popupTitle',
       titleSuffixKey: 'optSettingsDocTitle'

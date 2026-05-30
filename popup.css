@@ -1,8 +1,8 @@
 :root {
   --pixel-size: 2;
-  --bg: #0c1222;
-  --bg-elevated: #0f172a;
-  --surface: #1e293b;
+  --bg: var(--vt-bg);
+  --bg-elevated: var(--vt-bg-elevated);
+  --surface: var(--vt-surface);
   --surface-2: #334155;
   --text: #f1f5f9;
   --muted: #94a3b8;
@@ -2937,12 +2937,6 @@ html[data-surface='sidepanel'] .result-hero-body {
   border-color: rgba(167, 139, 250, 0.42);
 }
 
-.news-item-source--dark-reading {
-  color: #67e8f9;
-  background: rgba(34, 211, 238, 0.14);
-  border-color: rgba(34, 211, 238, 0.4);
-}
-
 .news-item-source--news {
   color: #cbd5e1;
   background: rgba(148, 163, 184, 0.14);
@@ -3377,12 +3371,6 @@ html[data-theme="light"] .news-item-source--securityweek {
   color: #6d28d9;
   background: rgba(167, 139, 250, 0.18);
   border-color: rgba(124, 58, 237, 0.32);
-}
-
-html[data-theme="light"] .news-item-source--dark-reading {
-  color: #0e7490;
-  background: rgba(34, 211, 238, 0.16);
-  border-color: rgba(8, 145, 178, 0.32);
 }
 
 html[data-theme="light"] .news-item-source--news {

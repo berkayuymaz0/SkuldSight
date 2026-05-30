@@ -12,6 +12,7 @@ const VT_API = 'https://www.virustotal.com/api/v3';
 const APP_NAME = 'PixelPaw SOC';
 const utils = globalThis.VtSocUtils;
 const guards = globalThis.VtBackgroundGuards;
+const SK = utils.STORAGE_KEYS;
 /** Canonical HTTPS endpoints; Dark Reading RSS is behind Cloudflare (no usable XML for extensions). */
 const NEWS_FEED_URLS = [
   'https://www.bleepingcomputer.com/feed/',
@@ -20,14 +21,14 @@ const NEWS_FEED_URLS = [
   'https://www.securityweek.com/feed/',
   'https://feeds.feedburner.com/TheHackersNews'
 ];
-const NEWS_CACHE_KEY = 'vtNewsCache';
-const NEWS_CACHE_AT_KEY = 'vtNewsFetchedAt';
+const NEWS_CACHE_KEY = SK.newsCache;
+const NEWS_CACHE_AT_KEY = SK.newsFetchedAt;
 const NEWS_CACHE_TTL_MS = 10 * 60 * 1000;
 const NEWS_AUTO_REFRESH_ALARM = 'vtNewsAutoRefresh';
 const USOM_INDEX_URL = 'https://www.usom.gov.tr/api/incident/index';
 const USOM_API_BASE = 'https://www.usom.gov.tr/api/incident/';
-const USOM_CACHE_KEY = 'vtUsomCache';
-const USOM_CACHE_AT_KEY = 'vtUsomFetchedAt';
+const USOM_CACHE_KEY = SK.usomCache;
+const USOM_CACHE_AT_KEY = SK.usomFetchedAt;
 const USOM_CACHE_TTL_MS = 10 * 60 * 1000;
 const USOM_AUTO_REFRESH_ALARM = 'vtUsomAutoRefresh';
 const NEWS_MAX_ITEMS = 20;
@@ -80,7 +81,7 @@ function showNotification(kind, title, message) {
 }
 const MAX_RECENT_ENTRIES = 50;
 const MAX_BATCH_HISTORY_ENTRIES = 5;
-const ANALYTICS_KEY = 'vtAnalytics';
+const ANALYTICS_KEY = SK.analytics;
 const ANALYTICS_DAYS_KEEP = 60;
 const ANALYTICS_VERSION = 2;
 
@@ -138,9 +139,9 @@ function applySettingChanges(changes) {
   }
 }
 
-const UI_MODE_KEY = 'vtUiMode';
+const UI_MODE_KEY = SK.uiMode;
 /** Latest external scan (context menu or VT badge) for popup/side panel on open (see popup.js). */
-const CONTEXT_SCAN_RESULT_KEY = 'vtContextScanResult';
+const CONTEXT_SCAN_RESULT_KEY = SK.contextScanResult;
 const POPUP_PATH = 'popup.html';
 const PANEL_PATH = 'popup.html?surface=sidepanel';
 /** In-memory UI mode mirror for notification gating without extra storage reads. */
@@ -324,9 +325,6 @@ function feedSourceFromUrl(feedUrl) {
   }
   if (u.indexOf('cyberscoop.com') !== -1) {
     return 'CyberScoop';
-  }
-  if (u.indexOf('darkreading.com') !== -1) {
-    return 'Dark Reading';
   }
   if (u.indexOf('krebsonsecurity.com') !== -1) {
     return 'Krebs on Security';

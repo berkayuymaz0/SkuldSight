@@ -13,4 +13,18 @@
   --vt-border-strong: rgba(148, 163, 184, 0.32);
   --vt-font-ui: "Segoe UI", system-ui, -apple-system, sans-serif;
   --vt-font-mono: "Consolas", "Fira Code", "Courier New", monospace;
+  --vt-bg: #0c1222;
+  --vt-bg-elevated: #0f172a;
+  --vt-surface: #1e293b;
+  --vt-text: #f1f5f9;
+  --vt-muted: #94a3b8;
+  --vt-badge-fg: #bae6fd;
+  --vt-badge-accent: #7dd3fc;
+  --vt-badge-bg-start: #1e4d6b;
+  --vt-badge-bg-end: #1a3d5c;
+  --vt-badge-bg-hover-start: #255a7d;
+  --vt-badge-bg-hover-end: #204868;
+  --vt-panel-error: #fca5a5;
+  --vt-chip-mal: #f87171;
+  --vt-chip-susp: #fbbf24;
 }

@@ -111,18 +111,19 @@
   const characterSprite = document.querySelector('.Character_spritesheet');
   const mascotBubble = document.getElementById('mascot-bubble');
   const mascotHost = document.querySelector('.header-mascot');
-  const NEWS_READ_MAP_KEY = 'vtNewsReadMap';
+  const SK = utils.STORAGE_KEYS;
+  const NEWS_READ_MAP_KEY = SK.newsReadMap;
   /** Mirror background.js cache keys so popup follows SW-only auto refresh (alarms). */
-  const VT_NEWS_CACHE_KEY = 'vtNewsCache';
-  const VT_NEWS_FETCHED_AT_KEY = 'vtNewsFetchedAt';
-  const VT_USOM_CACHE_KEY = 'vtUsomCache';
-  const VT_USOM_FETCHED_AT_KEY = 'vtUsomFetchedAt';
-  const POPUP_ACTIVE_TAB_KEY = 'vtPopupActiveTab';
+  const VT_NEWS_CACHE_KEY = SK.newsCache;
+  const VT_NEWS_FETCHED_AT_KEY = SK.newsFetchedAt;
+  const VT_USOM_CACHE_KEY = SK.usomCache;
+  const VT_USOM_FETCHED_AT_KEY = SK.usomFetchedAt;
+  const POPUP_ACTIVE_TAB_KEY = SK.popupActiveTab;
   /** Pending external scan; shown once then removed from storage. */
-  const CONTEXT_SCAN_RESULT_KEY = 'vtContextScanResult';
-  const COPY_SUMMARY_FIELDS_KEY = 'vtCopySummaryFields';
-  const SCAN_PRESET_KEY = 'vtScanPreset';
-  const SCAN_PRESETS_KEY = 'vtScanPresets';
+  const CONTEXT_SCAN_RESULT_KEY = SK.contextScanResult;
+  const COPY_SUMMARY_FIELDS_KEY = SK.copySummaryFields;
+  const SCAN_PRESET_KEY = SK.scanPreset;
+  const SCAN_PRESETS_KEY = SK.scanPresets;
   let scanPresets = utils.normalizeScanPresetsMap(null);
 
   let queueTimer = null;
@@ -517,6 +518,13 @@
   // applyPopupLang: Popup DOM veya kullanıcı etkileşimi ile ilgili.
   function applyPopupLang() {
     utils.applyI18n(document, t, { titleKey: 'popupTitle' });
+    const kbdHint = document.querySelector('.kbd-hint[data-i18n="kbdScan"]');
+    if (kbdHint) {
+      const isMac =
+        /Mac|iPhone|iPad|iPod/i.test(navigator.platform || '') ||
+        (navigator.userAgentData && navigator.userAgentData.platform === 'macOS');
+      kbdHint.textContent = t(isMac ? 'kbdScanMac' : 'kbdScan');
+    }
     if (btnScanInputExpand) {
       btnScanInputExpand.setAttribute('aria-label', t('scanInputCompactHint'));
     }
@@ -599,6 +607,7 @@
   function setUiLang(lang, persist) {
     const v = lang === 'tr' ? 'tr' : 'en';
     VT_I18N.setLang(v);
+    document.documentElement.lang = v;
     syncLangToggleLabel();
     if (!persist) {
       return;
@@ -923,9 +932,9 @@
       const tags = item && Array.isArray(item.tags) && item.tags.length ? item.tags.join(', ') : '';
       const body = usomHtmlToPlainText(item && item.desc ? item.desc : '');
       const fullText = [
-        title ? 'Title: ' + title : '',
-        date ? 'Date: ' + date : '',
-        tags ? 'Tags: ' + tags : '',
+        title ? t('usomCopyTitle') + ' ' + title : '',
+        date ? t('usomCopyDate') + ' ' + date : '',
+        tags ? t('usomCopyTags') + ' ' + tags : '',
         body
       ].filter(Boolean).join('\n\n');
       copyToClipboard(fullText)
@@ -1074,8 +1083,7 @@
     CyberScoop: 'cyberscoop',
     'Krebs on Security': 'krebs-on-security',
     'The Hacker News': 'the-hacker-news',
-    SecurityWeek: 'securityweek',
-    'Dark Reading': 'dark-reading'
+    SecurityWeek: 'securityweek'
   };
 
   // newsSourceClassName: Haber kaynağı etiketi için renk sınıfını döndürür.
@@ -1279,6 +1287,9 @@
     const next = nextTab === 'news' ? 'news' : nextTab === 'usom' ? 'usom' : 'scan';
     activeTab = next;
     if (characterSprite) {
+      const reduceMotion =
+        typeof window.matchMedia === 'function' &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (characterTurnTimer) {
         window.clearTimeout(characterTurnTimer);
         characterTurnTimer = null;
@@ -1289,6 +1300,9 @@
       }
       characterSprite.classList.remove('is-turning');
       characterSprite.classList.remove('face-down', 'face-right', 'face-up', 'face-left');
+      if (reduceMotion) {
+        characterSprite.classList.add('face-down');
+      } else {
       const tabOrder = { scan: 0, news: 1, usom: 2 };
       let turnFace = 'face-down';
       if (tabOrder[next] > tabOrder[prevTab]) {
@@ -1310,6 +1324,7 @@
         }, 260);
         characterPauseTimer = null;
       }, 110);
+      }
     }
     if (tabScan) {
       tabScan.classList.toggle('is-active', activeTab === 'scan');
@@ -2740,49 +2755,55 @@
     return String(abuse.error);
   }
 
-  const BATCH_CSV_COLUMNS = [
-    ['Source File', 'source_file'],
-    ['Row No', 'line_no'],
-    ['Input Original', 'input_raw'],
-    ['Input Normalized', 'input_scanned'],
-    ['Scan Status', 'status'],
-    ['IoC', 'ioc'],
-    ['IoC Type', 'type'],
-    ['Overall Threat', 'threat'],
-    ['VT Threat', 'vt_threat_level'],
-    ['Abuse Threat', 'abuse_threat_level'],
-    ['VT Malicious', 'mal'],
-    ['VT Suspicious', 'susp'],
-    ['VT Undetected', 'und'],
-    ['VT Harmless', 'harmless'],
-    ['VT Timeout', 'timeout'],
-    ['VT Failure', 'failure'],
-    ['Detected Engines', 'detected_engines'],
-    ['Total Engines', 'total_engines'],
-    ['Detection Ratio', 'ratio'],
-    ['Reputation Score', 'rep'],
-    ['Abuse Enabled (Batch)', 'abuse_enabled'],
-    ['Abuse Confidence Score', 'abuse_confidence_score'],
-    ['Abuse Reports (Overall)', 'abuse_total_reports'],
-    ['Abuse Window (Days)', 'abuse_overall_window_days'],
-    ['Abuse Reports (Recent)', 'abuse_recent_reports'],
-    ['Abuse Top Category', 'abuse_top_category'],
-    ['Abuse Last Reported (UTC)', 'abuse_last_reported_utc'],
-    ['Suggested Label', 'suggested_label'],
-    ['Creation Date', 'detail_creation_date'],
-    ['First Seen', 'detail_first_seen'],
-    ['Last Seen', 'detail_last_seen'],
-    ['Last Analysis', 'detail_last_analysis'],
-    ['Country', 'detail_country'],
-    ['ASN', 'detail_asn'],
-    ['AS Owner', 'detail_as_owner'],
-    ['Registrar', 'detail_registrar'],
-    ['Tags', 'detail_tags'],
-    ['Summary Details', 'details_summary'],
-    ['Report URL', 'permalink'],
-    ['Error', 'error'],
-    ['Scanned At (UTC)', 'scanned_at']
+  const BATCH_CSV_COLUMN_DEFS = [
+    ['batchCsvSourceFile', 'source_file'],
+    ['batchCsvRowNo', 'line_no'],
+    ['batchCsvInputOriginal', 'input_raw'],
+    ['batchCsvInputNormalized', 'input_scanned'],
+    ['batchCsvScanStatus', 'status'],
+    ['batchCsvIoc', 'ioc'],
+    ['batchCsvIocType', 'type'],
+    ['batchCsvOverallThreat', 'threat'],
+    ['batchCsvVtThreat', 'vt_threat_level'],
+    ['batchCsvAbuseThreat', 'abuse_threat_level'],
+    ['batchCsvVtMalicious', 'mal'],
+    ['batchCsvVtSuspicious', 'susp'],
+    ['batchCsvVtUndetected', 'und'],
+    ['batchCsvVtHarmless', 'harmless'],
+    ['batchCsvVtTimeout', 'timeout'],
+    ['batchCsvVtFailure', 'failure'],
+    ['batchCsvDetectedEngines', 'detected_engines'],
+    ['batchCsvTotalEngines', 'total_engines'],
+    ['batchCsvDetectionRatio', 'ratio'],
+    ['batchCsvReputationScore', 'rep'],
+    ['batchCsvAbuseEnabled', 'abuse_enabled'],
+    ['batchCsvAbuseConfidence', 'abuse_confidence_score'],
+    ['batchCsvAbuseReportsOverall', 'abuse_total_reports'],
+    ['batchCsvAbuseWindow', 'abuse_overall_window_days'],
+    ['batchCsvAbuseReportsRecent', 'abuse_recent_reports'],
+    ['batchCsvAbuseTopCategory', 'abuse_top_category'],
+    ['batchCsvAbuseLastReported', 'abuse_last_reported_utc'],
+    ['batchCsvSuggestedLabel', 'suggested_label'],
+    ['batchCsvCreationDate', 'detail_creation_date'],
+    ['batchCsvFirstSeen', 'detail_first_seen'],
+    ['batchCsvLastSeen', 'detail_last_seen'],
+    ['batchCsvLastAnalysis', 'detail_last_analysis'],
+    ['batchCsvCountry', 'detail_country'],
+    ['batchCsvAsn', 'detail_asn'],
+    ['batchCsvAsOwner', 'detail_as_owner'],
+    ['batchCsvRegistrar', 'detail_registrar'],
+    ['batchCsvTags', 'detail_tags'],
+    ['batchCsvSummaryDetails', 'details_summary'],
+    ['batchCsvReportUrl', 'permalink'],
+    ['batchCsvError', 'error'],
+    ['batchCsvScannedAt', 'scanned_at']
   ];
+
+  function getBatchCsvColumns() {
+    return BATCH_CSV_COLUMN_DEFS.map(function (col) {
+      return [t(col[0]), col[1]];
+    });
+  }
 
   function emptyBatchDetailFields() {
     return {
@@ -2839,14 +2860,15 @@
 
   // buildBatchCsv: Popup DOM veya kullanıcı etkileşimi ile ilgili.
   function buildBatchCsv(rows) {
+    const columns = getBatchCsvColumns();
     const lines = [
-      BATCH_CSV_COLUMNS.map(function (col) {
+      columns.map(function (col) {
         return escapeCsvField(col[0]);
       }).join(',')
     ];
     rows.forEach(function (r) {
       lines.push(
-        BATCH_CSV_COLUMNS.map(function (col) {
+        columns.map(function (col) {
           return r[col[1]];
         })
           .map(escapeCsvField)
@@ -3821,6 +3843,7 @@
         }
         const v = data.vtUiLang === 'tr' ? 'tr' : 'en';
         VT_I18N.setLang(v);
+        document.documentElement.lang = v;
         syncLangToggleLabel();
         applyPresetMap(data[SCAN_PRESETS_KEY]);
         const savedPreset =
@@ -3949,6 +3972,7 @@
     if (area === 'local' && changes.vtUiLang) {
       const v = changes.vtUiLang.newValue === 'tr' ? 'tr' : 'en';
       VT_I18N.setLang(v);
+      document.documentElement.lang = v;
       syncLangToggleLabel();
       applyPopupLang();
       loadRecentList();

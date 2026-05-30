@@ -11,6 +11,20 @@
   const SCAN_PRESETS_VERSION = 3;
   const SCAN_PRESET_IDS = ['quick', 'detailed', 'analyst'];
   const IOC_KINDS = ['ip', 'domain', 'url', 'file'];
+  const STORAGE_KEYS = {
+    contextScanResult: 'vtContextScanResult',
+    scanPreset: 'vtScanPreset',
+    scanPresets: 'vtScanPresets',
+    copySummaryFields: 'vtCopySummaryFields',
+    newsReadMap: 'vtNewsReadMap',
+    newsCache: 'vtNewsCache',
+    newsFetchedAt: 'vtNewsFetchedAt',
+    usomCache: 'vtUsomCache',
+    usomFetchedAt: 'vtUsomFetchedAt',
+    popupActiveTab: 'vtPopupActiveTab',
+    analytics: 'vtAnalytics',
+    uiMode: 'vtUiMode'
+  };
   const COPY_SUMMARY_KINDS = ['ip', 'domain', 'url', 'file'];
   const COPY_SUMMARY_FIELD_KEYS = [
     'ioc',
@@ -327,6 +341,12 @@
       const key = el.getAttribute('data-i18n-title');
       if (key) {
         el.title = translate(key);
+      }
+    });
+    doc.querySelectorAll('[data-i18n-aria-label]').forEach(function (el) {
+      const key = el.getAttribute('data-i18n-aria-label');
+      if (key) {
+        el.setAttribute('aria-label', translate(key));
       }
     });
     if (options.titleKey && doc.title !== undefined) {
@@ -1151,6 +1171,7 @@
   }
 
   global.VtSocUtils = {
+    STORAGE_KEYS: STORAGE_KEYS,
     clampRateSec: clampRateSec,
     normalizeIocInput: normalizeIocInput,
     dayKeyFromTs: dayKeyFromTs,

@@ -42,6 +42,7 @@
   );
   const DOMAIN_SCAN_DEBOUNCE_MS = 120;
   const MAX_MUTATION_ROOTS_PER_FLUSH = 60;
+  const INLINE_SCAN_CACHE_MAX = 50;
   const inlineScanCache = new Map();
   let domainPanel = null;
   let observer = null;
@@ -67,8 +68,12 @@
 
   // İçerik betiğinde VT_I18N dilini kullanıcı ayarına göre Türkçe veya İngilizce yapar.
   function syncContentLang(isTr) {
+    const lang = isTr ? 'tr' : 'en';
     if (typeof VT_I18N !== 'undefined' && VT_I18N.setLang) {
-      VT_I18N.setLang(isTr ? 'tr' : 'en');
+      VT_I18N.setLang(lang);
+    }
+    if (document.documentElement) {
+      document.documentElement.lang = lang;
     }
   }
 
@@ -579,9 +584,11 @@
     return (
       '<div class="vt-domain-panel-head">' +
       '<strong class="vt-domain-panel-domain">' +
-      domain +
+      escapePanelHtml(domain) +
       '</strong>' +
-      '<button type="button" class="vt-domain-panel-close" data-vt-close="1" aria-label="Close">✕</button>' +
+      '<button type="button" class="vt-domain-panel-close" data-vt-close="1" aria-label="' +
+      escapePanelHtml(ct('panelClose')) +
+      '">✕</button>' +
       '</div>'
     );
   }
@@ -601,7 +608,7 @@
     return (
       panelHtmlHead(domain) +
       '<div class="vt-domain-panel-status is-error">' +
-      String(error || ct('domainBadgeScanFailed')).slice(0, 180) +
+      escapePanelHtml(String(error || ct('domainBadgeScanFailed')).slice(0, 180)) +
       '</div>'
     );
   }
@@ -683,6 +690,28 @@
       .replace(/"/g, '&quot;');
   }
 
+  function sanitizePermalink(url) {
+    const s = String(url || '').trim();
+    if (s.indexOf('https://www.virustotal.com/') === 0) {
+      return s;
+    }
+    return '#';
+  }
+
+  function inlineScanCacheSet(key, value) {
+    if (inlineScanCache.has(key)) {
+      inlineScanCache.delete(key);
+    }
+    inlineScanCache.set(key, value);
+    while (inlineScanCache.size > INLINE_SCAN_CACHE_MAX) {
+      const oldest = inlineScanCache.keys().next().value;
+      if (oldest === undefined) {
+        break;
+      }
+      inlineScanCache.delete(oldest);
+    }
+  }
+
   function panelMetaValueEmpty(value) {
     const v = String(value ?? '').trim();
     return !v || v === '—' || v === '-';
@@ -714,7 +743,7 @@
 
   function panelHtmlResult(label, res, iocKind) {
     const s = res && res.stats ? res.stats : {};
-    const permalink = res && res.permalink ? String(res.permalink) : '#';
+    const permalink = sanitizePermalink(res && res.permalink ? String(res.permalink) : '#');
     const totalEngines =
       (Number(s.malicious) || 0) +
       (Number(s.suspicious) || 0) +
@@ -793,7 +822,7 @@
       '</button>' +
       abuseFootLink +
       '<a class="vt-domain-panel-link" href="' +
-      permalink +
+      escapePanelHtml(permalink) +
       '" target="_blank" rel="noopener noreferrer">' +
       vtLinkLabel +
       '</a>' +
@@ -908,7 +937,7 @@
           );
         } else {
           panelLastScanResult = res;
-          inlineScanCache.set(inlineCacheKey(iocKind, value), res);
+          inlineScanCacheSet(inlineCacheKey(iocKind, value), res);
           applyBadgeRiskStateForAll(iocKind, value, res);
           panel.innerHTML = panelHtmlResult(label, res, iocKind);
         }

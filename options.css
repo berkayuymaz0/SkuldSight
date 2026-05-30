@@ -1,7 +1,7 @@
 :root {
-  --bg: #0b1220;
-  --bg-2: #0f1a30;
-  --surface: #111a2e;
+  --bg: var(--vt-bg);
+  --bg-2: var(--vt-bg-elevated);
+  --surface: var(--vt-surface);
   --surface-soft: #17223a;
   --text: #e5edf8;
   --muted: #91a2be;

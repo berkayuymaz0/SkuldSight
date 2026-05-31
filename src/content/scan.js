@@ -123,10 +123,7 @@
         const res = msg.result;
         if (!res || !res.ok) {
           panelLastScanResult = null;
-          panel.innerHTML = panelHtmlError(
-            label,
-            res && res.error ? res.error : ct('domainBadgeScanFailed')
-          );
+          panel.innerHTML = panelHtmlError(label, res || { errorKey: 'errorScanFailed' });
         } else {
           panelLastScanResult = res;
           inlineScanCacheSet(inlineCacheKey(iocKind, value), res);

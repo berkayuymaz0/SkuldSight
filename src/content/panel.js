@@ -139,10 +139,16 @@
 
   // Tarama hatası mesajını gösteren panel HTML’ini üretir.
   function panelHtmlError(domain, error) {
+    const msg =
+      typeof VT_I18N !== 'undefined' && VT_I18N.resolveErrorMessage
+        ? VT_I18N.resolveErrorMessage(
+            typeof error === 'object' ? error : { error: error }
+          )
+        : String(error || ct('domainBadgeScanFailed'));
     return (
       panelHtmlHead(domain) +
       '<div class="vt-domain-panel-status is-error">' +
-      escapePanelHtml(String(error || ct('domainBadgeScanFailed')).slice(0, 180)) +
+      escapePanelHtml(String(msg).slice(0, 180)) +
       '</div>'
     );
   }
@@ -306,6 +312,20 @@
       res && res.threatContext && res.threatContext.suggestedLabel
         ? String(res.threatContext.suggestedLabel).slice(0, 48)
         : '';
+    let severityLine = '';
+    if (res && res.threatSeverity && res.threatSeverity.level) {
+      const short = String(res.threatSeverity.level).replace(/^SEVERITY_/, '');
+      const skey = 'vtSeverity_' + short;
+      const sl = ct(skey);
+      severityLine = sl !== skey ? sl : short;
+    }
+    let freshnessLine = '';
+    if (res && res.analysisFreshness && res.analysisFreshness.days != null) {
+      freshnessLine =
+        res.analysisFreshness.days === 0
+          ? ct('analysisFreshnessToday')
+          : ct('analysisFreshnessDays', { n: res.analysisFreshness.days });
+    }
     const repRaw =
       res && res.reputation !== undefined && res.reputation !== null && res.reputation !== ''
         ? String(res.reputation)
@@ -320,6 +340,8 @@
       panelFactHtml(ct('domainBadgeThreatLabel'), threatLabel) +
       panelFactHtml(ct('domainBadgeCreationDate'), creationDate) +
       panelFactHtml(ct('domainBadgeReputation'), rep) +
+      panelFactHtml('', severityLine) +
+      panelFactHtml('', freshnessLine) +
       panelFactHtml(ct('panelMetaLast'), lastShort);
     const factsBlock = facts ? '<div class="vt-panel-facts">' + facts + '</div>' : '';
     return (

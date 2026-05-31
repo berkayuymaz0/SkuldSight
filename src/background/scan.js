@@ -81,18 +81,34 @@ async function requestVtReanalysis(message) {
   }
   const json = await vtFetch(path, { method: 'POST' }, { iocKind: iocKind });
   const analysisId = json && json.data && json.data.id ? String(json.data.id) : '';
-  return {
+  const result = {
     ok: true,
     iocKind: iocKind,
     ioc: ioc,
     vtObjectId: objectId,
     analysisId: analysisId
   };
+  if (message && message.waitForCompletion && analysisId) {
+    const poll = await pollVtAnalysis(analysisId, {
+      iocKind: iocKind,
+      onProgress: message.onProgress
+    });
+    result.poll = poll;
+    if (poll.ok) {
+      const detected = detectIoc(ioc);
+      if (detected.kind !== 'unknown') {
+        result.scan = await scanIoc(detected, { skipExtras: false, skipPolling: true });
+      }
+    }
+  }
+  return result;
 }
 
-// fetchUrlObject: Önce GET (cache); yoksa POST + GET.
-async function fetchUrlObject(urlStr) {
+// fetchUrlObject: Önce GET (cache); yoksa POST + poll + GET.
+async function fetchUrlObject(urlStr, opts) {
+  opts = opts || {};
   const meta = { iocKind: 'url' };
+  const shouldPoll = opts.skipPolling !== true;
   const urlId = urlToVtId(urlStr);
   if (urlId) {
     try {
@@ -114,14 +130,20 @@ async function fetchUrlObject(urlStr) {
     },
     meta
   );
-  const newId = posted.data && posted.data.id;
-  if (!newId) {
+  const postedData = posted && posted.data;
+  const postedType = postedData && postedData.type ? String(postedData.type) : '';
+  const postedId = postedData && postedData.id ? String(postedData.id) : '';
+  if (!postedId) {
     const err = new Error('Unexpected VirusTotal response for URL submit');
     err.errorKey = 'errorVtUrlSubmit';
     err.errorVars = {};
     throw err;
   }
-  return vtFetch('/urls/' + encodeURIComponent(newId), { method: 'GET' }, meta);
+  if (shouldPoll && postedType === 'analysis') {
+    await pollVtAnalysis(postedId, { iocKind: 'url' });
+  }
+  const fetchId = postedType === 'url' ? postedId : urlToVtId(urlStr);
+  return vtFetch('/urls/' + encodeURIComponent(fetchId), { method: 'GET' }, meta);
 }
 
 // attachRelationshipPreview: Tek ilişki önizlemesini payload'a ekler.
@@ -139,10 +161,16 @@ async function attachRelationshipPreview(payload, detected, data, cfg, targetKey
     const relJson = await vtFetch(path, { method: 'GET' }, { iocKind: detected.kind });
     payload[key] = parseRelationshipPreviewResponse(detected.kind, cfg.relationship, relJson);
   } catch (e) {
-    payload[key] = {
+    const relErr = {
       relationship: cfg.relationship,
       error: e && e.message ? String(e.message) : 'Request failed'
     };
+    if (e && e.vtStatus === 403) {
+      relErr.errorKey = 'errorVtRelationshipPremium';
+    } else if (e && e.errorKey) {
+      relErr.errorKey = e.errorKey;
+    }
+    payload[key] = relErr;
   }
 }
 
@@ -186,6 +214,45 @@ async function runWorker() {
   }
 }
 
+function enrichScanPayload(payload, detected, data, attrs, scanFlags) {
+  const rep = extractReputation(attrs);
+  if (rep !== null) {
+    payload.reputation = rep;
+  }
+  const threatSeverity = extractThreatSeverity(attrs);
+  if (threatSeverity) {
+    payload.threatSeverity = threatSeverity;
+  }
+  if (attrs && attrs.last_analysis_date != null) {
+    payload.lastAnalysisDate = Number(attrs.last_analysis_date);
+    payload.analysisFreshness = formatAnalysisFreshness(attrs.last_analysis_date);
+  }
+  if (detected.kind === 'file') {
+    const sand = extractSandboxVerdicts(attrs, 5);
+    if (sand.length) {
+      payload.sandboxVerdicts = sand;
+    }
+  }
+  if (attrs) {
+    payload.extendedThreatLabels = scanFlags.engineBreakdown === true;
+    payload.threatContext = extractThreatContext(attrs, {
+      maxDistinctLabels: scanFlags.engineBreakdown ? 20 : 8
+    });
+    if (scanFlags.engineBreakdown) {
+      payload.engineBreakdown = extractEngineBreakdown(attrs, { onlyFlagging: true });
+    }
+    payload.hero = buildHeroSummary(
+      detected.kind,
+      detected,
+      attrs,
+      payload.threatContext,
+      rep,
+      threatSeverity
+    );
+  }
+  return payload;
+}
+
 // scanIoc: Tarama kuyruğu, geçmiş veya toplu özet depolama.
 async function scanIoc(detected, opts) {
   opts = opts || {};
@@ -207,6 +274,7 @@ async function scanIoc(detected, opts) {
   }
   let data;
   let abuseEnrichment = null;
+  const fetchOpts = { skipPolling: skipExtras || opts.skipPolling === true };
   switch (detected.kind) {
     case 'ip': {
       if (opts.includeAbuse === false) {
@@ -229,7 +297,7 @@ async function scanIoc(detected, opts) {
       data = await fetchFile(detected.value);
       break;
     case 'url':
-      data = await fetchUrlObject(detected.value);
+      data = await fetchUrlObject(detected.value, fetchOpts);
       break;
     default:
       throw new Error('Unsupported IoC kind');
@@ -253,23 +321,7 @@ async function scanIoc(detected, opts) {
   if (vtObjectId) {
     payload.vtObjectId = vtObjectId;
   }
-  const rep = extractReputation(attrs);
-  if (rep !== null) {
-    payload.reputation = rep;
-  }
-  if (attrs) {
-    payload.extendedThreatLabels = scanFlags.engineBreakdown === true;
-    payload.threatContext = extractThreatContext(attrs, {
-      maxDistinctLabels: scanFlags.engineBreakdown ? 20 : 8
-    });
-    payload.hero = buildHeroSummary(
-      detected.kind,
-      detected,
-      attrs,
-      payload.threatContext,
-      rep
-    );
-  }
+  enrichScanPayload(payload, detected, data, attrs, scanFlags);
   if (detected.kind === 'ip') {
     mergeAbuseIntoIpPayload(payload, abuseEnrichment);
   }
@@ -316,4 +368,3 @@ async function scanIoc(detected, opts) {
   }
   return payload;
 }
-

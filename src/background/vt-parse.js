@@ -61,7 +61,16 @@ function extractStats(data) {
   const attrs = data && data.data && data.data.attributes;
   const stats = attrs && attrs.last_analysis_stats;
   if (!stats) {
-    return { malicious: 0, suspicious: 0, undetected: 0, harmless: 0, timeout: 0, failure: 0 };
+    return {
+      malicious: 0,
+      suspicious: 0,
+      undetected: 0,
+      harmless: 0,
+      timeout: 0,
+      failure: 0,
+      confirmedTimeout: 0,
+      typeUnsupported: 0
+    };
   }
   return {
     malicious: Number(stats.malicious) || 0,
@@ -69,7 +78,9 @@ function extractStats(data) {
     undetected: Number(stats.undetected) || 0,
     harmless: Number(stats.harmless) || 0,
     timeout: Number(stats.timeout) || 0,
-    failure: Number(stats.failure) || 0
+    failure: Number(stats.failure) || 0,
+    confirmedTimeout: Number(stats['confirmed-timeout']) || 0,
+    typeUnsupported: Number(stats['type-unsupported']) || 0
   };
 }
 
@@ -82,6 +93,120 @@ function threatLevel(stats) {
     return 'suspicious';
   }
   return 'clean';
+}
+
+/** VT threat_severity block when present on object attributes. */
+function extractThreatSeverity(attrs) {
+  if (!attrs || typeof attrs !== 'object') {
+    return null;
+  }
+  const ts = attrs.threat_severity;
+  if (!ts || typeof ts !== 'object') {
+    return null;
+  }
+  const level = ts.threat_severity_level != null ? String(ts.threat_severity_level) : '';
+  if (!level) {
+    return null;
+  }
+  return {
+    level: level,
+    description: ts.level_description != null ? String(ts.level_description).slice(0, 500) : '',
+    lastAnalysisDate: ts.last_analysis_date != null ? Number(ts.last_analysis_date) : null
+  };
+}
+
+/** Relative age from VT last_analysis_date unix timestamp. */
+function formatAnalysisFreshness(ts) {
+  const num = Number(ts);
+  if (!isFinite(num) || num <= 0) {
+    return null;
+  }
+  const ageMs = Date.now() - num * 1000;
+  if (ageMs < 0) {
+    return { days: 0, stale: false };
+  }
+  const days = Math.floor(ageMs / (24 * 60 * 60 * 1000));
+  return { days: days, stale: days > 90 };
+}
+
+/** Sandbox verdict summary from file attributes (max 5 sandboxes). */
+function extractSandboxVerdicts(attrs, max) {
+  const sv = attrs && attrs.sandbox_verdicts;
+  if (!sv || typeof sv !== 'object') {
+    return [];
+  }
+  const lim = Number(max) > 0 ? Number(max) : 5;
+  const out = [];
+  const keys = Object.keys(sv);
+  for (let i = 0; i < keys.length && out.length < lim; i++) {
+    const row = sv[keys[i]];
+    if (!row || typeof row !== 'object') {
+      continue;
+    }
+    out.push({
+      name: String(row.sandbox_name || keys[i]).slice(0, 80),
+      category: row.category != null ? String(row.category) : '',
+      confidence: row.confidence != null ? Number(row.confidence) : null,
+      malwareNames: Array.isArray(row.malware_names)
+        ? row.malware_names.slice(0, 3).map(function (n) {
+            return String(n);
+          })
+        : []
+    });
+  }
+  return out;
+}
+
+/** Per-engine rows from last_analysis_results (no extra API call). */
+function extractEngineBreakdown(attrs, opts) {
+  opts = opts || {};
+  const onlyFlagging = opts.onlyFlagging !== false;
+  const maxRows = Number(opts.maxRows) > 0 ? Number(opts.maxRows) : 70;
+  const results = attrs && attrs.last_analysis_results;
+  if (!results || typeof results !== 'object') {
+    return { summary: { totalEngines: 0, vendorsFlagging: 0 }, engines: [] };
+  }
+  const keys = Object.keys(results);
+  const engines = [];
+  let flagging = 0;
+  for (let i = 0; i < keys.length && engines.length < maxRows; i++) {
+    const r = results[keys[i]];
+    if (!r || typeof r !== 'object') {
+      continue;
+    }
+    const cat = r.category != null ? String(r.category) : '';
+    if (onlyFlagging && cat !== 'malicious' && cat !== 'suspicious') {
+      continue;
+    }
+    if (cat === 'malicious' || cat === 'suspicious') {
+      flagging++;
+    }
+    engines.push({
+      engine: String(r.engine_name || keys[i]).slice(0, 80),
+      result: r.result != null ? String(r.result).slice(0, 200) : '',
+      category: cat
+    });
+  }
+  engines.sort(function (a, b) {
+    const rank = function (c) {
+      if (c === 'malicious') {
+        return 0;
+      }
+      if (c === 'suspicious') {
+        return 1;
+      }
+      return 2;
+    };
+    const d = rank(a.category) - rank(b.category);
+    if (d !== 0) {
+      return d;
+    }
+    return a.engine.localeCompare(b.engine);
+  });
+  return {
+    summary: { totalEngines: keys.length, vendorsFlagging: flagging },
+    engines: engines
+  };
 }
 
 /** VT community reputation score when present (file, domain, IP, URL objects). */
@@ -266,12 +391,19 @@ function urlToVtId(urlStr) {
 }
 
 // buildHeroSummary: IoC türüne göre scan kartı üst satırları.
-function buildHeroSummary(kind, detected, attrs, threatContext, reputation) {
+function buildHeroSummary(kind, detected, attrs, threatContext, reputation, threatSeverity) {
   const out = { subtitle: '', iocDisplay: '', tagChips: [], chips: [] };
   const tc = threatContext || {};
   const a = attrs || {};
   if (tc.suggestedLabel) {
     out.chips.push({ type: 'label', value: tc.suggestedLabel });
+  }
+  if (threatSeverity && threatSeverity.level) {
+    out.chips.push({
+      type: 'severity',
+      level: String(threatSeverity.level),
+      value: String(threatSeverity.level).replace(/^SEVERITY_/, '')
+    });
   }
   out.tagChips = utils.mapTagsToHeroChips(a.tags, 12);
   if (reputation !== null && reputation !== undefined && reputation !== '') {
@@ -585,11 +717,50 @@ function parseRelationshipPreviewResponse(kind, relationship, json) {
       label = entry.id != null ? String(entry.id) : resolutionItemLabel(entry);
     }
     label = String(label || '').replace(/\s+/g, ' ').trim();
-    if (label) {
-      items.push(label);
+    if (!label) {
+      continue;
     }
+    const attrs = entry.attributes || {};
+    const relStats = attrs.last_analysis_stats;
+    const item = {
+      label: label,
+      iocKind: inferRelItemKind(typ, entry, kind),
+      malicious: relStats ? Number(relStats.malicious) || 0 : 0,
+      suspicious: relStats ? Number(relStats.suspicious) || 0 : 0
+    };
+    items.push(item);
   }
   return { relationship: relationship, items: items, count: count };
+}
+
+function inferRelItemKind(entryType, entry, parentKind) {
+  const typ = String(entryType || entry.type || '').toLowerCase();
+  if (typ === 'ip_address' || typ === 'ip') {
+    return 'ip';
+  }
+  if (typ === 'domain') {
+    return 'domain';
+  }
+  if (typ === 'url') {
+    return 'url';
+  }
+  if (typ === 'file') {
+    return 'file';
+  }
+  if (typ === 'resolution') {
+    return parentKind === 'ip' || parentKind === 'domain' ? 'domain' : 'ip';
+  }
+  const id = entry.id != null ? String(entry.id) : '';
+  if (/^(?:\d{1,3}\.){3}\d{1,3}$/.test(id) || id.indexOf(':') >= 0) {
+    return 'ip';
+  }
+  if (/^[a-f0-9]{32,64}$/i.test(id)) {
+    return 'file';
+  }
+  if (id.indexOf('http') === 0) {
+    return 'url';
+  }
+  return 'domain';
 }
 
 // mapPopularThreatItems: Arka plan yardımcısı; gövde içinde kullanım ayrıntıları.
@@ -777,11 +948,17 @@ function trimPayloadForHistory(payload) {
   const out = Object.assign({}, payload);
   if (out.relationshipPreview && Array.isArray(out.relationshipPreview.items)) {
     out.relationshipPreview = Object.assign({}, out.relationshipPreview, {
-      items: out.relationshipPreview.items
-        .slice(0, MAX_HISTORY_REL_ITEMS)
-        .map(function (s) {
-          return String(s).slice(0, MAX_HISTORY_REL_STR);
-        })
+      items: out.relationshipPreview.items.slice(0, MAX_HISTORY_REL_ITEMS).map(function (it) {
+        if (it && typeof it === 'object' && it.label) {
+          return {
+            label: String(it.label).slice(0, MAX_HISTORY_REL_STR),
+            malicious: Number(it.malicious) || 0,
+            suspicious: Number(it.suspicious) || 0,
+            iocKind: it.iocKind ? String(it.iocKind) : ''
+          };
+        }
+        return { label: String(it).slice(0, MAX_HISTORY_REL_STR), malicious: 0, suspicious: 0 };
+      })
     });
   }
   if (out.threatContext) {
@@ -817,11 +994,17 @@ function trimPayloadForHistory(payload) {
   }
   if (out.relationshipPreviewSecondary && out.relationshipPreviewSecondary.items) {
     out.relationshipPreviewSecondary = Object.assign({}, out.relationshipPreviewSecondary, {
-      items: out.relationshipPreviewSecondary.items
-        .slice(0, MAX_HISTORY_REL_ITEMS)
-        .map(function (s) {
-          return String(s).slice(0, MAX_HISTORY_REL_STR);
-        })
+      items: out.relationshipPreviewSecondary.items.slice(0, MAX_HISTORY_REL_ITEMS).map(function (it) {
+        if (it && typeof it === 'object' && it.label) {
+          return {
+            label: String(it.label).slice(0, MAX_HISTORY_REL_STR),
+            malicious: Number(it.malicious) || 0,
+            suspicious: Number(it.suspicious) || 0,
+            iocKind: it.iocKind ? String(it.iocKind) : ''
+          };
+        }
+        return { label: String(it).slice(0, MAX_HISTORY_REL_STR), malicious: 0, suspicious: 0 };
+      })
     });
   }
   return out;

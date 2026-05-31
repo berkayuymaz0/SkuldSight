@@ -98,6 +98,25 @@
       vtReanalyzeTitle: 'Queue a new VirusTotal analysis for this IoC',
       vtReanalyzePending: 'Queuing…',
       vtReanalyzeQueued: 'Reanalysis queued on VirusTotal. Rescan in a few minutes.',
+      vtReanalyzePolling: 'Waiting for analysis… ({attempt}/{max})',
+      vtReanalyzeComplete: 'Reanalysis complete — results refreshed.',
+      vtReanalyzePollTimeout: 'Reanalysis queued; full results may take a few more minutes.',
+      vtSeverity_NONE: 'Severity: none',
+      vtSeverity_LOW: 'Severity: low',
+      vtSeverity_MEDIUM: 'Severity: medium',
+      vtSeverity_HIGH: 'Severity: high',
+      vtSeverity_UNKNOWN: 'Severity: unknown',
+      analysisFreshnessDays: 'Last scanned {n} days ago',
+      analysisFreshnessToday: 'Scanned today',
+      analysisFreshnessStale: 'Report may be outdated — consider reanalyze',
+      engineBreakdownHeading: 'Flagging engines',
+      sandboxHeading: 'Sandbox verdicts',
+      sandboxMalwareNames: 'Families: {names}',
+      errorVtRelationshipPremium: 'This relationship may require a Premium VT API key',
+      vtQuotaDaily: 'VT daily quota: {remaining}/{allowed} left',
+      vtQuotaMonthly: 'VT monthly quota: {remaining}/{allowed} left',
+      vtQuotaLowWarning: 'Low VT quota — batch may fail before completion',
+      batchCsvThreatSeverity: 'VT Threat Severity',
       errorVtReanalyzeFailed: 'Could not queue VirusTotal reanalysis',
       errorVtReanalyzeUnsupported: 'Reanalyze is not supported for this result',
       resultHybridVerdict: 'Combined {combined} · VT {vt} · Abuse {abuse}',
@@ -281,7 +300,7 @@
         'Default 16s (~4 requests/minute). Adjust if your API tier allows faster pacing.',
       optProMode: 'Pro mode (disable API rate limit)',
       optProModeHint:
-        'When enabled, local rate limiting is skipped and requests are sent immediately.',
+        'Pro mode uses a 1s minimum between VT calls (local pacing is not fully disabled).',
       optBatchUseAbuse: 'Enable AbuseIPDB enrichment during batch scans (IP only)',
       optNotifyQueued: 'Show notification when a request waits on the rate limit queue',
       optNotifyNews:
@@ -607,6 +626,25 @@
       vtReanalyzeTitle: 'Bu IoC için VirusTotal’de yeni analiz kuyruğuna al',
       vtReanalyzePending: 'Kuyruğa alınıyor…',
       vtReanalyzeQueued: 'Yeniden analiz VirusTotal kuyruğuna alındı. Birkaç dakika sonra tekrar tarayın.',
+      vtReanalyzePolling: 'Analiz bekleniyor… ({attempt}/{max})',
+      vtReanalyzeComplete: 'Yeniden analiz tamamlandı — sonuçlar güncellendi.',
+      vtReanalyzePollTimeout: 'Yeniden analiz kuyruğa alındı; tam sonuç birkaç dakika sürebilir.',
+      vtSeverity_NONE: 'Şiddet: yok',
+      vtSeverity_LOW: 'Şiddet: düşük',
+      vtSeverity_MEDIUM: 'Şiddet: orta',
+      vtSeverity_HIGH: 'Şiddet: yüksek',
+      vtSeverity_UNKNOWN: 'Şiddet: bilinmiyor',
+      analysisFreshnessDays: 'Son tarama {n} gün önce',
+      analysisFreshnessToday: 'Bugün tarandı',
+      analysisFreshnessStale: 'Rapor eski olabilir — yeniden analiz düşünün',
+      engineBreakdownHeading: 'İşaretleyen motorlar',
+      sandboxHeading: 'Sandbox kararları',
+      sandboxMalwareNames: 'Aileler: {names}',
+      errorVtRelationshipPremium: 'Bu ilişki Premium VT API anahtarı gerektirebilir',
+      vtQuotaDaily: 'VT günlük kota: {remaining}/{allowed} kaldı',
+      vtQuotaMonthly: 'VT aylık kota: {remaining}/{allowed} kaldı',
+      vtQuotaLowWarning: 'VT kotası düşük — toplu tarama yarıda kalabilir',
+      batchCsvThreatSeverity: 'VT Tehdit Şiddeti',
       errorVtReanalyzeFailed: 'VirusTotal yeniden analiz kuyruğa alınamadı',
       errorVtReanalyzeUnsupported: 'Bu sonuç için yeniden analiz desteklenmiyor',
       resultHybridVerdict: 'Birleşik {combined} · VT {vt} · Abuse {abuse}',
@@ -790,7 +828,7 @@
         'Varsayılan 16 sn (~4 istek/dk). API kotanıza göre ayarlayın.',
       optProMode: 'Pro mod (API hız sınırını kapat)',
       optProModeHint:
-        'Açıkken yerel hız sınırlaması atlanır ve istekler hemen gönderilir.',
+        'Pro mod VT çağrıları arasında en az 1 sn bekler (yerel pacing tamamen kapatılmaz).',
       optBatchUseAbuse: 'Toplu taramalarda AbuseIPDB zenginleştirmesini etkinleştir (yalnızca IP)',
       optNotifyQueued:
         'Hız sınırı kuyruğunda beklerken bildirim göster',
@@ -1071,6 +1109,23 @@
     messages: M,
     t: vtT,
     setLang: vtSetLang,
-    lang: vtLang
+    lang: vtLang,
+    resolveErrorMessage: function (source) {
+      if (source && typeof source === 'object') {
+        if (source.errorKey) {
+          const msg = vtT(source.errorKey, source.errorVars || {});
+          if (msg && msg !== source.errorKey) {
+            return msg;
+          }
+        }
+        if (source.error) {
+          return String(source.error);
+        }
+      }
+      if (typeof source === 'string' && source) {
+        return source;
+      }
+      return vtT('errorScanFailed');
+    }
   };
 })(typeof self !== 'undefined' ? self : this);

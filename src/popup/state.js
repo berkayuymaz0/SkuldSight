@@ -40,6 +40,7 @@
   const resultChartBar = document.getElementById('result-chart-bar');
   const resultChartLegend = document.getElementById('result-chart-legend');
   const resultVtEmpty = document.getElementById('result-vt-empty');
+  const resultVtFreshness = document.getElementById('result-vt-freshness');
   const resultVtPill = document.getElementById('result-vt-pill');
   const btnVtReanalyze = document.getElementById('btn-vt-reanalyze');
   const vtReanalyzeStatus = document.getElementById('result-vt-reanalyze-status');
@@ -56,6 +57,9 @@
   const resultMitreError = document.getElementById('result-mitre-error');
   const resultMitreMeta = document.getElementById('result-mitre-meta');
   const resultMitreList = document.getElementById('result-mitre-list');
+  const resultSandboxBlock = document.getElementById('result-sandbox-block');
+  const resultSandboxList = document.getElementById('result-sandbox-list');
+  const resultSandboxDetails = document.getElementById('result-sandbox-details');
   const resultDetailsBlock = document.getElementById('result-details-block');
   const resultDetailsEl = document.getElementById('result-details');
   const resultEngineDetails = document.getElementById('result-engine-details');
@@ -69,6 +73,7 @@
   const resultReputation = document.getElementById('result-reputation');
   const resultRepSep = document.getElementById('result-rep-sep');
   const scanQuotaHint = document.getElementById('scan-quota-hint');
+  const vtQuotaHint = document.getElementById('vt-quota-hint');
   const copyToast = document.getElementById('copy-toast');
   const resultLink = document.getElementById('result-link');
   const resultAbuseBlock = document.getElementById('result-abuse-block');

@@ -222,7 +222,17 @@
             if (res.username) {
               okMsg += ': ' + res.username;
             }
-            showToast(okMsg);
+            chrome.runtime.sendMessage({ type: 'GET_VT_QUOTAS', apiKey: key }, function (q) {
+              if (q && q.ok && q.daily && q.daily.allowed > 0) {
+                okMsg +=
+                  ' · ' +
+                  t('vtQuotaDaily', {
+                    remaining: q.daily.remaining,
+                    allowed: q.daily.allowed
+                  });
+              }
+              showToast(okMsg);
+            });
             return;
           }
           const code = res.error || '';

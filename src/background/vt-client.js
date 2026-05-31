@@ -7,14 +7,15 @@ function notifyQueued() {
   showNotification('queue', APP_NAME, 'Request queued. Waiting for VT rate limit...');
 }
 
+function effectiveRateIntervalMs() {
+  return proModeEnabled ? PRO_MODE_MIN_INTERVAL_MS : rateIntervalMs;
+}
+
 // waitRateLimit: VirusTotal API hız sınırı veya HTTP çağrısı.
 async function waitRateLimit() {
-  if (proModeEnabled) {
-    return;
-  }
   const now = Date.now();
   const wait = Math.max(0, nextSlotAt - now);
-  if (wait > NOTIFY_WAIT_MS) {
+  if (!proModeEnabled && wait > NOTIFY_WAIT_MS) {
     notifyQueued();
   }
   if (wait > 0) {
@@ -24,16 +25,29 @@ async function waitRateLimit() {
 
 // markSlot: VirusTotal API hız sınırı veya HTTP çağrısı.
 function markSlot() {
-  if (proModeEnabled) {
-    return;
-  }
-  nextSlotAt = Date.now() + rateIntervalMs;
+  nextSlotAt = Date.now() + effectiveRateIntervalMs();
 }
 
 /** One VT API slot: wait for pacing then reserve the next interval (used by all throttled VT calls). */
 async function consumeVtRateSlot() {
   await waitRateLimit();
   markSlot();
+}
+
+function parseRetryAfterSec(headerVal) {
+  const raw = String(headerVal || '').trim();
+  if (!raw) {
+    return 0;
+  }
+  const n = Number(raw);
+  if (isFinite(n) && n >= 0) {
+    return n;
+  }
+  const when = Date.parse(raw);
+  if (isFinite(when)) {
+    return Math.max(0, Math.ceil((when - Date.now()) / 1000));
+  }
+  return 0;
 }
 
 async function getStoredKeyWithExpiry(keyName, savedAtName) {
@@ -107,6 +121,105 @@ async function testVtApiConnection(overrideKey) {
   }
 }
 
+/** GET /users/{id}/overall_quotas — does not consume API quota. */
+async function fetchVtQuotas(overrideKey) {
+  let key = String(overrideKey || '').trim();
+  if (!key) {
+    const stored = await getStoredKeyWithExpiry('vtApiKey', 'vtApiKeySavedAt');
+    key = stored.key;
+    if (stored.isExpired || !key) {
+      return { ok: false, error: 'no_api_key' };
+    }
+  }
+  const url = VT_API + '/users/' + encodeURIComponent(key) + '/overall_quotas';
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: { 'x-apikey': key }
+  });
+  const text = await res.text();
+  if (res.status === 401 || res.status === 403) {
+    return { ok: false, error: 'unauthorized' };
+  }
+  if (!res.ok) {
+    return { ok: false, error: 'http_' + res.status, detail: text ? text.slice(0, 200) : '' };
+  }
+  try {
+    const data = JSON.parse(text);
+    const attrs = data && data.data && data.data.attributes;
+    return {
+      ok: true,
+      daily: parseQuotaBucket(attrs && attrs.api_requests_daily),
+      monthly: parseQuotaBucket(attrs && attrs.api_requests_monthly),
+      fetchedAt: Date.now()
+    };
+  } catch (_) {
+    return { ok: false, error: 'bad_json' };
+  }
+}
+
+function parseQuotaBucket(bucket) {
+  if (!bucket || typeof bucket !== 'object') {
+    return null;
+  }
+  const user = bucket.user && typeof bucket.user === 'object' ? bucket.user : bucket;
+  const used = Number(user.used);
+  const allowed = Number(user.allowed);
+  if (!isFinite(allowed) || allowed <= 0) {
+    return null;
+  }
+  const usedN = isFinite(used) && used >= 0 ? used : 0;
+  return {
+    used: usedN,
+    allowed: allowed,
+    remaining: Math.max(0, allowed - usedN)
+  };
+}
+
+/**
+ * Poll GET /analyses/{id} until status is completed or attempts exhausted.
+ * Each poll consumes one API quota unit when the analysis id is valid.
+ */
+async function pollVtAnalysis(analysisId, opts) {
+  opts = opts || {};
+  const id = String(analysisId || '').trim();
+  if (!id || opts.enabled === false) {
+    return { ok: false, skipped: true };
+  }
+  const maxAttempts =
+    Number(opts.maxAttempts) > 0 ? Number(opts.maxAttempts) : VT_ANALYSIS_POLL_MAX;
+  const intervalMs =
+    Number(opts.intervalMs) > 0 ? Number(opts.intervalMs) : VT_ANALYSIS_POLL_INTERVAL_MS;
+  const meta = { iocKind: opts.iocKind || '' };
+  let lastStatus = '';
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    if (attempt > 0) {
+      await sleep(intervalMs);
+    }
+    let json;
+    try {
+      json = await vtFetch('/analyses/' + encodeURIComponent(id), { method: 'GET' }, meta);
+    } catch (e) {
+      if (e && e.vtStatus === 404 && attempt + 1 < maxAttempts) {
+        continue;
+      }
+      throw e;
+    }
+    const attrs = json && json.data && json.data.attributes;
+    lastStatus = attrs && attrs.status ? String(attrs.status) : '';
+    if (lastStatus === 'completed') {
+      return { ok: true, status: lastStatus, attempts: attempt + 1 };
+    }
+    if (typeof opts.onProgress === 'function') {
+      opts.onProgress({
+        status: lastStatus || 'queued',
+        attempt: attempt + 1,
+        maxAttempts: maxAttempts
+      });
+    }
+  }
+  return { ok: false, status: lastStatus || 'timeout', attempts: maxAttempts };
+}
+
 // parseVtErrorBody: VT hata JSON gövdesinden kod ve mesaj çıkarır.
 function parseVtErrorBody(text) {
   if (!text) {
@@ -165,24 +278,50 @@ function makeVtApiError(status, text, meta) {
 // vtFetch: VirusTotal API hız sınırı veya HTTP çağrısı.
 async function vtFetch(path, init, meta) {
   const key = await getApiKey();
-  await consumeVtRateSlot();
-  const res = await fetch(VT_API + path, Object.assign({}, init, {
-    headers: Object.assign({
-      'x-apikey': key
-    }, init && init.headers)
-  }));
-  const text = await res.text();
-  if (!res.ok) {
-    throw makeVtApiError(res.status, text, meta);
+  let lastErr = null;
+  for (let attempt = 0; attempt < VT_429_MAX_RETRIES; attempt++) {
+    await consumeVtRateSlot();
+    const res = await fetch(
+      VT_API + path,
+      Object.assign({}, init, {
+        headers: Object.assign(
+          {
+            'x-apikey': key
+          },
+          init && init.headers
+        )
+      })
+    );
+    const text = await res.text();
+    if (res.status === 429 && attempt + 1 < VT_429_MAX_RETRIES) {
+      const retrySec = parseRetryAfterSec(res.headers.get('Retry-After'));
+      const waitMs = retrySec > 0
+        ? retrySec * 1000
+        : Math.min(
+            VT_429_BACKOFF_MAX_MS,
+            VT_429_BACKOFF_BASE_MS * Math.pow(2, attempt)
+          );
+      await sleep(waitMs);
+      continue;
+    }
+    if (!res.ok) {
+      lastErr = makeVtApiError(res.status, text, meta);
+      throw lastErr;
+    }
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      const err = new Error('Invalid JSON from VirusTotal');
+      err.errorKey = 'errorVtBadJson';
+      err.errorVars = {};
+      throw err;
+    }
   }
-  try {
-    return JSON.parse(text);
-  } catch (e) {
-    const err = new Error('Invalid JSON from VirusTotal');
-    err.errorKey = 'errorVtBadJson';
-    err.errorVars = {};
-    throw err;
+  if (lastErr) {
+    throw lastErr;
   }
+  const err = new Error('VirusTotal rate limit exceeded');
+  err.errorKey = 'errorVtRateLimit';
+  err.errorVars = {};
+  throw err;
 }
-
-// stripIpv6Brackets: Arka plan yardımcısı; gövde içinde kullanım ayrıntıları.

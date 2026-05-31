@@ -286,6 +286,10 @@ const backgroundMessageHandlers = {
       };
     });
   },
+  GET_VT_QUOTAS: function (message, sendResponse) {
+    const override = message && message.apiKey != null ? String(message.apiKey) : '';
+    return respondAsync(sendResponse, fetchVtQuotas(override), 'Failed to load VT quotas');
+  },
   ENRICH_ABUSE_FOR_IP: function (message, sendResponse) {
     const ip = message && message.ip ? String(message.ip).trim() : '';
     if (!ip) {

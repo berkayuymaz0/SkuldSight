@@ -261,7 +261,7 @@
     const p = normalizeScanPresetKind(profile, DEFAULT_SCAN_PRESETS.quick[kind]);
     let max = 2;
     if (iocKind === 'url') {
-      max = 2;
+      max = 4;
     } else {
       max = 1;
     }

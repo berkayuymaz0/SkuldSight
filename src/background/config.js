@@ -50,6 +50,14 @@ const MAX_HISTORY_ENGINE_ROWS = 40;
 const MAX_HISTORY_MITRE_IDS = 40;
 const NOTIFY_WAIT_MS = 800;
 const NOTIFY_MESSAGE_MAX = 250;
+/** VT analysis polling after URL submit or reanalyze (single-scan only; batch skips). */
+const VT_ANALYSIS_POLL_MAX = 8;
+const VT_ANALYSIS_POLL_INTERVAL_MS = 20000;
+/** Minimum spacing between VT calls when pro mode disables normal pacing. */
+const PRO_MODE_MIN_INTERVAL_MS = 1000;
+const VT_429_MAX_RETRIES = 3;
+const VT_429_BACKOFF_BASE_MS = 16000;
+const VT_429_BACKOFF_MAX_MS = 60000;
 
 // uniqueNotificationId: Her bildirim için benzersiz id (sabit id yeniden uyarmaz).
 function uniqueNotificationId(kind) {

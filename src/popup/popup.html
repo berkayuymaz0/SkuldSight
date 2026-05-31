@@ -168,6 +168,7 @@
             >Analyst</button>
           </div>
           <p id="scan-quota-hint" class="scan-quota-hint" hidden aria-live="polite"></p>
+          <p id="vt-quota-hint" class="scan-quota-hint vt-quota-hint" hidden aria-live="polite"></p>
         </div>
         <input
           type="file"
@@ -275,6 +276,7 @@
                 <p class="result-chart-caption" data-i18n="resultVtEnginesCaption">Engine detections</p>
               </div>
               <p id="result-vt-reanalyze-status" class="result-vt-reanalyze-status" hidden aria-live="polite"></p>
+              <p id="result-vt-freshness" class="result-vt-freshness" hidden aria-live="polite"></p>
               <div id="result-chart" class="result-chart" hidden>
                 <div class="result-chart-meta">
                   <span class="result-chart-ratio" id="result-chart-ratio" aria-live="polite"></span>
@@ -336,6 +338,14 @@
               <p id="result-rel-caption" class="result-extra-summary"></p>
               <p id="result-rel-error" class="result-extra-error" hidden></p>
               <ul id="result-rel-list" class="result-extra-list"></ul>
+            </div>
+          </details>
+          <details id="result-sandbox-details" class="result-collapsible" hidden open>
+            <summary class="result-collapsible-summary">
+              <span data-i18n="sandboxHeading">Sandbox verdicts</span>
+            </summary>
+            <div id="result-sandbox-block" class="result-extra-block">
+              <ul id="result-sandbox-list" class="result-extra-list"></ul>
             </div>
           </details>
           <details id="result-mitre-details" class="result-collapsible" hidden open>

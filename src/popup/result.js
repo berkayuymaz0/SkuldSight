@@ -96,12 +96,14 @@
     const harmless = Number(s.harmless) || 0;
     const timeout = Number(s.timeout) || 0;
     const failure = Number(s.failure) || 0;
-    const sum = mal + susp + und + harmless + timeout + failure;
+    const confirmedTimeout = Number(s.confirmedTimeout) || 0;
+    const typeUnsupported = Number(s.typeUnsupported) || 0;
+    const sum = mal + susp + und + harmless + timeout + failure + confirmedTimeout + typeUnsupported;
     return {
       mal: mal,
       susp: susp,
       und: und,
-      other: harmless + timeout + failure,
+      other: harmless + timeout + failure + confirmedTimeout + typeUnsupported,
       sum: sum,
       detected: mal + susp
     };
@@ -194,8 +196,80 @@
     setProviderPill(resultAbusePill, '', '');
   }
 
+  function severityChipLabel(level) {
+    const short = String(level || '').replace(/^SEVERITY_/, '');
+    const key = 'vtSeverity_' + short;
+    const msg = t(key);
+    return msg !== key ? msg : short;
+  }
+
+  function renderAnalysisFreshness(payload) {
+    if (!resultVtFreshness) {
+      return;
+    }
+    const fresh = payload && payload.analysisFreshness;
+    if (!fresh || fresh.days == null) {
+      resultVtFreshness.hidden = true;
+      resultVtFreshness.textContent = '';
+      resultVtFreshness.className = 'result-vt-freshness';
+      return;
+    }
+    resultVtFreshness.hidden = false;
+    resultVtFreshness.textContent =
+      fresh.days === 0 ? t('analysisFreshnessToday') : t('analysisFreshnessDays', { n: fresh.days });
+    resultVtFreshness.className =
+      'result-vt-freshness' + (fresh.stale ? ' is-stale' : '');
+    if (fresh.stale) {
+      resultVtFreshness.title = t('analysisFreshnessStale');
+    } else {
+      resultVtFreshness.removeAttribute('title');
+    }
+  }
+
+  function appendRelationshipListItems(listEl, items, onPivot) {
+    (items || []).forEach(function (item) {
+      const row = item && typeof item === 'object' ? item : { label: String(item || '') };
+      const label = row.label ? String(row.label) : '';
+      if (!label) {
+        return;
+      }
+      const li = document.createElement('li');
+      li.className = 'result-extra-li result-rel-li';
+      const mal = Number(row.malicious) || 0;
+      const susp = Number(row.suspicious) || 0;
+      if (mal > 0 || susp > 0) {
+        li.classList.add(mal > 0 ? 'is-mal' : 'is-susp');
+      }
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'result-rel-pivot';
+      btn.textContent = label;
+      if (mal > 0 || susp > 0) {
+        btn.textContent += ' (M' + mal + (susp > 0 ? ' S' + susp : '') + ')';
+      }
+      btn.addEventListener('click', function () {
+        if (typeof onPivot === 'function') {
+          onPivot(label, row.iocKind);
+        }
+      });
+      li.appendChild(btn);
+      listEl.appendChild(li);
+    });
+  }
+
+  function pivotToScan(ioc, iocKind) {
+    if (!input || !ioc) {
+      return;
+    }
+    input.value = ioc;
+    hideError();
+    if (typeof runScan === 'function') {
+      runScan();
+    }
+  }
+
   // renderResultChart: Motor dağılımı ve özet metrikleri.
-  function renderResultChart(stats) {
+  function renderResultChart(stats, payload) {
     const totals = engineTotals(stats);
     if (!resultChart || !resultChartBar) {
       return false;
@@ -211,6 +285,9 @@
       }
       if (resultVtEmpty) {
         resultVtEmpty.hidden = false;
+      }
+      if (payload) {
+        renderAnalysisFreshness(payload);
       }
       return false;
     }
@@ -274,6 +351,10 @@
       return el;
     });
     appendFragment(resultChartBar, barNodes);
+
+    if (payload) {
+      renderAnalysisFreshness(payload);
+    }
 
     if (resultChartLegend) {
       resultChartLegend.textContent = segments
@@ -373,7 +454,8 @@
         type: 'VT_REANALYZE',
         iocKind: payload.iocKind,
         ioc: payload.ioc,
-        vtObjectId: payload.vtObjectId || ''
+        vtObjectId: payload.vtObjectId || '',
+        waitForCompletion: true
       },
       function (res, err) {
         if (btnVtReanalyze) {
@@ -382,6 +464,15 @@
         }
         if (err) {
           showVtReanalyzeStatus(t('errorVtReanalyzeFailed'), 'error');
+          return;
+        }
+        if (res && res.ok && res.scan && res.scan.ok) {
+          renderResult(res.scan);
+          showVtReanalyzeStatus(t('vtReanalyzeComplete'), 'success');
+          return;
+        }
+        if (res && res.ok && res.poll && res.poll.ok === false) {
+          showVtReanalyzeStatus(t('vtReanalyzePollTimeout'), 'success');
           return;
         }
         if (res && res.ok) {
@@ -399,7 +490,7 @@
     const isIp = isIpScanPayload(payload);
     syncAbuseCardVisibility(payload);
     syncVtReanalyzeButton(payload);
-    const hasVt = renderResultChart(payload.stats);
+    const hasVt = renderResultChart(payload.stats, payload);
     const hasAbuseData = isIp && !!payload.abuseipdb;
 
     if (!resultThreatDashboard) {
@@ -681,7 +772,7 @@
     if (resultHeroChips) {
       clearElement(resultHeroChips);
       const visible = chips.filter(function (c) {
-        return c && c.type !== 'reputation' && c.type !== 'tag' && c.value;
+        return c && c.type !== 'reputation' && c.type !== 'tag' && (c.value || c.type === 'signature' || c.type === 'severity');
       });
       if (visible.length) {
         resultHeroChips.hidden = false;
@@ -697,6 +788,9 @@
             el.textContent =
               st === 'valid' ? t('heroSignatureVerified') : t('heroSignatureUnverified');
             el.className += st === 'valid' ? ' is-sig-valid' : ' is-sig-invalid';
+          } else if (c.type === 'severity') {
+            el.textContent = severityChipLabel(c.level || c.value);
+            el.className += ' is-severity';
           } else {
             el.textContent = String(c.value);
           }
@@ -914,18 +1008,13 @@
     renderThreatDashboard(payload);
     if (resultEngineBlock && resultEngineSummary && resultEngineList) {
       const tc = payload.threatContext;
-      const legacyEb = payload.engineBreakdown;
-      if (tc && threatContextHasExtraContent(tc, payload)) {
+      const eb = payload.engineBreakdown;
+      const hasTc = tc && threatContextHasExtraContent(tc, payload);
+      const hasEb = eb && Array.isArray(eb.engines) && eb.engines.length > 0;
+      if (hasTc || hasEb) {
         resultEngineBlock.hidden = false;
         clearElement(resultEngineSummary);
-        if (tc.suggestedLabel && !suggestedLabelInHero(payload)) {
-          const sug = document.createElement('div');
-          sug.className = 'threat-suggested';
-          sug.textContent = tc.suggestedLabel;
-          resultEngineSummary.appendChild(sug);
-        }
         clearElement(resultEngineList);
-        // addSection: Popup içi yardımcı; çağrı bağlamı gövdede.
         function addSection(titleKey, rows, formatter) {
           if (!rows || !rows.length) {
             return;
@@ -941,44 +1030,50 @@
             resultEngineList.appendChild(li);
           });
         }
-        addSection('threatPopularNamesHeading', tc.popularNames, function (it) {
-          const c = Number(it.count) || 0;
-          return it.value + (c > 1 ? ' (' + c + '×)' : '');
-        });
-        addSection('threatPopularCategoriesHeading', tc.popularCategories, function (it) {
-          const c = Number(it.count) || 0;
-          return it.value + (c > 1 ? ' (' + c + '×)' : '');
-        });
-        if (payload.extendedThreatLabels) {
-          addSection('threatDistinctLabelsHeading', tc.distinctLabels, function (it) {
+        if (hasTc) {
+          if (tc.suggestedLabel && !suggestedLabelInHero(payload)) {
+            const sug = document.createElement('div');
+            sug.className = 'threat-suggested';
+            sug.textContent = tc.suggestedLabel;
+            resultEngineSummary.appendChild(sug);
+          }
+          addSection('threatPopularNamesHeading', tc.popularNames, function (it) {
             const c = Number(it.count) || 0;
-            return it.label + (c > 1 ? ' (' + c + '×)' : '');
+            return it.value + (c > 1 ? ' (' + c + '×)' : '');
+          });
+          addSection('threatPopularCategoriesHeading', tc.popularCategories, function (it) {
+            const c = Number(it.count) || 0;
+            return it.value + (c > 1 ? ' (' + c + '×)' : '');
+          });
+          if (payload.extendedThreatLabels) {
+            addSection('threatDistinctLabelsHeading', tc.distinctLabels, function (it) {
+              const c = Number(it.count) || 0;
+              return it.label + (c > 1 ? ' (' + c + '×)' : '');
+            });
+          }
+        }
+        if (hasEb) {
+          const hdr = document.createElement('li');
+          hdr.className = 'result-extra-section-title';
+          hdr.textContent = t('engineBreakdownHeading');
+          resultEngineList.appendChild(hdr);
+          eb.engines.forEach(function (row) {
+            const li = document.createElement('li');
+            const cat = row.category || '';
+            li.className =
+              'result-extra-li' +
+              (cat === 'malicious' ? ' is-mal' : cat === 'suspicious' ? ' is-susp' : '');
+            const name = document.createElement('span');
+            name.className = 'result-extra-engine';
+            name.textContent = row.engine || '';
+            const res = document.createElement('span');
+            res.className = 'result-extra-result';
+            res.textContent = row.result ? String(row.result) : '';
+            li.appendChild(name);
+            li.appendChild(res);
+            resultEngineList.appendChild(li);
           });
         }
-      } else if (legacyEb && legacyEb.summary && Array.isArray(legacyEb.engines)) {
-        resultEngineBlock.hidden = false;
-        resultEngineSummary.textContent = '';
-        const leg = document.createElement('div');
-        leg.className = 'threat-meta';
-        leg.textContent = t('legacyEngineHeading');
-        resultEngineSummary.appendChild(leg);
-        clearElement(resultEngineList);
-        legacyEb.engines.forEach(function (row) {
-          const li = document.createElement('li');
-          const cat = row.category || '';
-          li.className =
-            'result-extra-li' +
-            (cat === 'malicious' ? ' is-mal' : cat === 'suspicious' ? ' is-susp' : '');
-          const name = document.createElement('span');
-          name.className = 'result-extra-engine';
-          name.textContent = row.engine || '';
-          const res = document.createElement('span');
-          res.className = 'result-extra-result';
-          res.textContent = row.result ? String(row.result) : '';
-          li.appendChild(name);
-          li.appendChild(res);
-          resultEngineList.appendChild(li);
-        });
       } else {
         resultEngineBlock.hidden = true;
         clearElement(resultEngineSummary);
@@ -1007,24 +1102,29 @@
         }
         if (rp.error) {
           resultRelError.hidden = false;
-          resultRelError.textContent = t('relationshipPreviewError', {
-            rel: rp.relationship || '',
-            msg: String(rp.error).slice(0, 400)
-          });
+          const errMsg = rp.errorKey
+            ? t(rp.errorKey, rp.errorVars || {})
+            : t('relationshipPreviewError', {
+                rel: rp.relationship || '',
+                msg: String(rp.error).slice(0, 400)
+              });
+          resultRelError.textContent = errMsg;
         } else {
           resultRelError.hidden = true;
           resultRelError.textContent = '';
         }
-        (rp.items || []).forEach(function (item) {
-          const li = document.createElement('li');
-          li.className = 'result-extra-li';
-          li.textContent = String(item);
-          resultRelList.appendChild(li);
-        });
+        appendRelationshipListItems(resultRelList, rp.items, pivotToScan);
       }
       if (rp2 && (rp2.error || (Array.isArray(rp2.items) && rp2.items.length > 0))) {
         resultRelBlock.hidden = false;
         anyRel = true;
+        if (rp2.error) {
+          resultRelError.hidden = false;
+          const errMsg2 = rp2.errorKey
+            ? t(rp2.errorKey, rp2.errorVars || {})
+            : String(rp2.error).slice(0, 400);
+          resultRelError.textContent = errMsg2;
+        }
         const hdr = document.createElement('li');
         hdr.className = 'result-extra-section-title';
         const relKey2 =
@@ -1035,12 +1135,7 @@
         }
         hdr.textContent = cap2;
         resultRelList.appendChild(hdr);
-        (rp2.items || []).forEach(function (item) {
-          const li = document.createElement('li');
-          li.className = 'result-extra-li';
-          li.textContent = String(item);
-          resultRelList.appendChild(li);
-        });
+        appendRelationshipListItems(resultRelList, rp2.items, pivotToScan);
       }
       if (!anyRel) {
         resultRelBlock.hidden = true;
@@ -1048,6 +1143,46 @@
         if (resultRelCaption) {
           resultRelCaption.textContent = '';
         }
+      }
+    }
+    if (resultSandboxBlock && resultSandboxList) {
+      const sand = payload.sandboxVerdicts;
+      if (Array.isArray(sand) && sand.length > 0) {
+        if (resultSandboxDetails) {
+          resultSandboxDetails.hidden = false;
+        }
+        resultSandboxBlock.hidden = false;
+        clearElement(resultSandboxList);
+        sand.forEach(function (row) {
+          const li = document.createElement('li');
+          li.className =
+            'result-extra-li' +
+            (row.category === 'malicious'
+              ? ' is-mal'
+              : row.category === 'suspicious'
+                ? ' is-susp'
+                : '');
+          let line = row.name || '';
+          if (row.category) {
+            line += ' · ' + row.category;
+          }
+          if (row.confidence != null && isFinite(row.confidence)) {
+            line += ' (' + row.confidence + '%)';
+          }
+          if (row.malwareNames && row.malwareNames.length) {
+            line +=
+              ' — ' +
+              t('sandboxMalwareNames', { names: row.malwareNames.join(', ') });
+          }
+          li.textContent = line;
+          resultSandboxList.appendChild(li);
+        });
+      } else {
+        if (resultSandboxDetails) {
+          resultSandboxDetails.hidden = true;
+        }
+        resultSandboxBlock.hidden = true;
+        clearElement(resultSandboxList);
       }
     }
     if (resultMitreBlock && resultMitreError && resultMitreMeta && resultMitreList) {
@@ -1127,6 +1262,9 @@
     }
     if (resultMitreDetails && resultMitreBlock) {
       resultMitreDetails.hidden = resultMitreBlock.hidden;
+    }
+    if (resultSandboxDetails && resultSandboxBlock) {
+      resultSandboxDetails.hidden = resultSandboxBlock.hidden;
     }
     if (resultDetailsCollapsible && resultDetailsBlock) {
       resultDetailsCollapsible.hidden = resultDetailsBlock.hidden;

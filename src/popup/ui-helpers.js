@@ -174,6 +174,50 @@
         scanQuotaHint.removeAttribute('title');
       }
       scanQuotaHint.hidden = false;
+      refreshVtQuotaHint();
+    });
+  }
+
+  function refreshVtQuotaHint() {
+    if (!vtQuotaHint) {
+      return;
+    }
+    sendToBackground({ type: 'GET_VT_QUOTAS' }, function (res, err) {
+      if (err || !res || !res.ok) {
+        vtQuotaHint.hidden = true;
+        vtQuotaHint.textContent = '';
+        return;
+      }
+      const parts = [];
+      if (res.daily && res.daily.allowed > 0) {
+        parts.push(
+          t('vtQuotaDaily', {
+            remaining: res.daily.remaining,
+            allowed: res.daily.allowed
+          })
+        );
+      }
+      if (res.monthly && res.monthly.allowed > 0) {
+        parts.push(
+          t('vtQuotaMonthly', {
+            remaining: res.monthly.remaining,
+            allowed: res.monthly.allowed
+          })
+        );
+      }
+      if (!parts.length) {
+        vtQuotaHint.hidden = true;
+        return;
+      }
+      vtQuotaHint.textContent = parts.join(' · ');
+      vtQuotaHint.hidden = false;
+      const lowDaily = res.daily && res.daily.remaining <= 20;
+      vtQuotaHint.classList.toggle('is-quota-low', !!lowDaily);
+      if (lowDaily) {
+        vtQuotaHint.title = t('vtQuotaLowWarning');
+      } else {
+        vtQuotaHint.removeAttribute('title');
+      }
     });
   }
 
@@ -405,8 +449,12 @@
         connStatus.hidden = true;
         connStatus.textContent = '';
         connStatus.className = 'conn-status';
+        if (vtQuotaHint) {
+          vtQuotaHint.hidden = true;
+        }
         return;
       }
+      refreshVtQuotaHint();
       connStatus.hidden = false;
       connStatus.textContent = t('popupConnChecking');
       connStatus.className = 'conn-status conn-status-checking';

@@ -281,6 +281,7 @@
     ['batchCsvAbuseTopCategory', 'abuse_top_category'],
     ['batchCsvAbuseLastReported', 'abuse_last_reported_utc'],
     ['batchCsvSuggestedLabel', 'suggested_label'],
+    ['batchCsvThreatSeverity', 'threat_severity'],
     ['batchCsvCreationDate', 'detail_creation_date'],
     ['batchCsvFirstSeen', 'detail_first_seen'],
     ['batchCsvLastSeen', 'detail_last_seen'],
@@ -314,6 +315,7 @@
       detail_as_owner: '',
       detail_tags: '',
       suggested_label: '',
+      threat_severity: '',
       details_summary: '',
       abuse_enabled: '',
       abuse_confidence_score: '',
@@ -393,7 +395,7 @@
         input_scanned: msg.line != null ? msg.line : src,
         status: 'error',
         ioc: msg.line != null ? msg.line : '',
-        error: msg.error || ''
+        error: resolveErrorMessage(msg)
       })
       );
       return;
@@ -405,7 +407,9 @@
       (Number(s.undetected) || 0) +
       (Number(s.harmless) || 0) +
       (Number(s.timeout) || 0) +
-      (Number(s.failure) || 0);
+      (Number(s.failure) || 0) +
+      (Number(s.confirmedTimeout) || 0) +
+      (Number(s.typeUnsupported) || 0);
     const detected = (Number(s.malicious) || 0) + (Number(s.suspicious) || 0);
     const details = Array.isArray(msg.details) ? msg.details : [];
     const detailById = {};
@@ -425,6 +429,10 @@
     const suggestedLabel =
       msg.threatContext && msg.threatContext.suggestedLabel
         ? String(msg.threatContext.suggestedLabel)
+        : '';
+    const threatSeverity =
+      msg.threatSeverity && msg.threatSeverity.level
+        ? String(msg.threatSeverity.level).replace(/^SEVERITY_/, '')
         : '';
     lastBatchExportRows.push({
       source_file: lastImportedFileName || '',
@@ -468,6 +476,7 @@
               .join(', ')
           : '',
       suggested_label: suggestedLabel,
+      threat_severity: threatSeverity,
       details_summary: detailSummary.join(' | '),
       permalink: msg.permalink || '',
       error: '',
@@ -629,8 +638,8 @@
             }
             setBatchLineStatus(li, threatLabelFromLevel(tl), cls);
           } else {
-            setBatchLineStatus(li, t('batchError'), 'is-error');
-            li.title = msg.error || '';
+            setBatchLineStatus(li, resolveErrorMessage(msg), 'is-error');
+            li.title = resolveErrorMessage(msg);
           }
           appendBatchExportRow(msg, lastBatchSourceLines, idx);
         }

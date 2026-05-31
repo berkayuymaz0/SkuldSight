@@ -229,6 +229,39 @@
   border-color: rgba(148, 163, 184, 0.2);
 }
 
+.result-vt-freshness {
+  margin: 0 0 6px;
+  font-size: 0.65rem;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.result-vt-freshness.is-stale {
+  color: #fbbf24;
+}
+
+.vt-quota-hint.is-quota-low {
+  color: #fbbf24;
+}
+
+.result-rel-pivot {
+  all: unset;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+}
+
+.result-rel-pivot:hover {
+  color: var(--accent, #38bdf8);
+}
+
+.result-hero-chip.is-severity {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
 .result-chart-caption {
   margin: 0;
   font-size: 0.62rem;

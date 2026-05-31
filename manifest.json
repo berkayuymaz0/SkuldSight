@@ -4,28 +4,28 @@
   "version": "1.0.3",
   "description": "Chrome MV3 extension for SOC analysts: scan IPs, domains, URLs & hashes via VirusTotal, with AbuseIPDB, batch scans & on-page IOC badges.",
   "action": {
-    "default_popup": "popup.html",
+    "default_popup": "src/popup/popup.html",
     "default_icon": {
-      "16": "icons/icon16.png",
-      "32": "icons/icon32.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
+      "16": "assets/icons/icon16.png",
+      "32": "assets/icons/icon32.png",
+      "48": "assets/icons/icon48.png",
+      "128": "assets/icons/icon128.png"
     },
     "default_title": "PixelPaw SOC"
   },
   "icons": {
-    "16": "icons/icon16.png",
-    "32": "icons/icon32.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
+    "16": "assets/icons/icon16.png",
+    "32": "assets/icons/icon32.png",
+    "48": "assets/icons/icon48.png",
+    "128": "assets/icons/icon128.png"
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "src/background/background.js"
   },
   "side_panel": {
-    "default_path": "popup.html?surface=sidepanel"
+    "default_path": "src/popup/popup.html?surface=sidepanel"
   },
-  "options_page": "options.html",
+  "options_page": "src/options/options.html",
   "permissions": [
     "storage",
     "contextMenus",
@@ -51,8 +51,8 @@
   "content_scripts": [
     {
       "matches": ["https://*/*"],
-      "js": ["i18n.js", "content-utils.js", "content.js"],
-      "css": ["tokens.css", "content.css"],
+      "js": ["src/shared/i18n.js", "src/content/content-utils.js", "src/content/detect.js", "src/content/panel.js", "src/content/scan.js", "src/content/observe.js"],
+      "css": ["styles/tokens.css", "styles/content.css"],
       "run_at": "document_idle"
     }
   ],

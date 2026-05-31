@@ -4,9 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PixelPaw SOC</title>
-  <link rel="stylesheet" href="tokens.css" />
-  <link rel="stylesheet" href="base.css" />
-  <link rel="stylesheet" href="popup.css" />
+  <link rel="stylesheet" href="../../styles/tokens.css" />
+  <link rel="stylesheet" href="../../styles/base.css" />
+  <link rel="stylesheet" href="../../styles/popup/base.css" />
+  <link rel="stylesheet" href="../../styles/popup/components.css" />
+  <link rel="stylesheet" href="../../styles/popup/result.css" />
+  <link rel="stylesheet" href="../../styles/popup/theme.css" />
 </head>
 <body>
   <div class="app">
@@ -14,8 +17,8 @@
       <div class="header-start">
         <div class="header-mascot" aria-hidden="true">
         <div class="Character Character--mark">
-          <img class="Character_shadow pixelart" src="assets/pixel/DemoRpgCharacterShadow.png" alt="Shadow" />
-          <img class="Character_spritesheet pixelart face-down" src="assets/pixel/DemoRpgCharacter.png" alt="Character" />
+          <img class="Character_shadow pixelart" src="../../assets/pixel/DemoRpgCharacterShadow.png" alt="Shadow" />
+          <img class="Character_spritesheet pixelart face-down" src="../../assets/pixel/DemoRpgCharacter.png" alt="Character" />
         </div>
         <div id="mascot-bubble" class="mascot-bubble"></div>
       </div>
@@ -460,9 +463,17 @@
       </section>
     </section>
   </div>
-  <script src="utils.js"></script>
-  <script src="i18n.js"></script>
+  <script src="../shared/utils/core.js"></script>
+  <script src="../shared/utils/analytics.js"></script>
+  <script src="../shared/utils/summary.js"></script>
+  <script src="../shared/utils/presets.js"></script>
+  <script src="../shared/utils/ioc.js"></script>
+  <script src="../shared/i18n.js"></script>
   <script src="mascot-bubbles.js"></script>
-  <script src="popup.js"></script>
+  <script src="state.js"></script>
+  <script src="ui-helpers.js"></script>
+  <script src="feeds.js"></script>
+  <script src="result.js"></script>
+  <script src="scan.js"></script>
 </body>
 </html>

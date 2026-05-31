@@ -1,0 +1,271 @@
+:root {
+  --pixel-size: 2;
+  --bg: var(--vt-bg);
+  --bg-elevated: var(--vt-bg-elevated);
+  --surface: var(--vt-surface);
+  --surface-2: #334155;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --malicious: var(--vt-danger);
+  --malicious-bg: rgba(248, 113, 113, 0.12);
+  --suspicious: var(--vt-warn);
+  --suspicious-bg: rgba(251, 191, 36, 0.12);
+  --clean: var(--vt-accent);
+  --clean-bg: rgba(52, 211, 153, 0.1);
+  --neutral: var(--vt-slate);
+  --neutral-bg: rgba(100, 116, 139, 0.12);
+  --border: var(--vt-border);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.22);
+  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --focus-ring: 0 0 0 2px var(--bg-elevated), 0 0 0 4px rgba(52, 211, 153, 0.45);
+  --tap-min: 2.25rem;
+  --font-ui: var(--vt-font-ui);
+  --font-mono: "Fira Code", "Consolas", "Courier New", monospace;
+  /* SOC palette: emerald (primary) + sky cyan (secondary) */
+  --soc-accent: var(--vt-accent);
+  --soc-accent-2: var(--vt-accent-secondary);
+  --soc-accent-2-soft: var(--vt-accent-secondary-soft);
+  --soc-accent-2-edge: rgba(56, 189, 248, 0.26);
+  --soc-edge: rgba(148, 163, 184, 0.16);
+  /* Neutral panel fill — accent colors are not used on backgrounds */
+  --soc-bg: linear-gradient(
+    155deg,
+    rgba(30, 41, 59, 0.72) 0%,
+    rgba(15, 23, 42, 0.9) 100%
+  );
+  --soc-bar: linear-gradient(180deg, var(--soc-accent) 0%, var(--soc-accent-2) 100%);
+  --soc-label: var(--muted);
+  --soc-inset-bg: rgba(15, 23, 42, 0.55);
+  --soc-inset-border: rgba(148, 163, 184, 0.16);
+  --soc-inset-focus: rgba(56, 189, 248, 0.45);
+  --soc-track-bg: rgba(15, 23, 42, 0.45);
+  --soc-track-border: rgba(148, 163, 184, 0.12);
+  --soc-seg-active: rgba(148, 163, 184, 0.14);
+}
+
+/* Ensure HTML hidden attribute always wins component display rules. */
+.app [hidden] {
+  display: none !important;
+}
+
+html,
+body {
+  margin: 0;
+  width: 432px;
+  min-height: 560px;
+  height: 560px;
+  font-family: var(--font-ui);
+  color: var(--text);
+  background-color: var(--bg);
+  background-image: radial-gradient(
+    ellipse 140% 90% at 50% -30%,
+    rgba(30, 41, 59, 0.35),
+    transparent 55%
+  );
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html[data-surface="sidepanel"] {
+  container-type: inline-size;
+  container-name: vt-panel;
+}
+
+html[data-surface="sidepanel"],
+html[data-surface="sidepanel"] body {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  min-height: 100vh;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+html[data-surface="sidepanel"] .app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  height: 100%;
+  overflow: hidden;
+  padding-bottom: 0.65rem;
+}
+
+html[data-surface="sidepanel"] .header,
+html[data-surface="sidepanel"] .tab-nav {
+  flex-shrink: 0;
+}
+
+/* Aktif sekme kalan yüksekliği doldurur; Recent listesi alt boşluğu kaplar. */
+html[data-surface="sidepanel"] .tab-panel:not([hidden]) {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+html[data-surface="sidepanel"] #panel-scan {
+  flex: 1 1 auto;
+  min-height: 0;
+  gap: 0.45rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(52, 211, 153, 0.35) transparent;
+}
+
+html[data-surface="sidepanel"] #panel-scan > .panel,
+html[data-surface="sidepanel"] #panel-scan > #result-wrap:not([hidden]),
+html[data-surface="sidepanel"] #panel-scan > #error-msg:not([hidden]),
+html[data-surface="sidepanel"] #panel-scan > #no-key-hint:not([hidden]) {
+  flex-shrink: 0;
+}
+
+html[data-surface="sidepanel"] #panel-scan > .recent-section {
+  flex: 1 1 auto;
+  min-height: 6.5rem;
+  display: flex;
+  flex-direction: column;
+  margin-top: 0.25rem;
+  padding-top: 0.45rem;
+  overflow: hidden;
+}
+
+/* Sonuç / batch görünürken üst bloklar taşar; panel kaydırılabilir, Recent doğal yükseklikte kalır. */
+html[data-surface="sidepanel"] #panel-scan:has(
+    #result-wrap:not([hidden]),
+    #error-msg:not([hidden])
+  )
+  > .recent-section {
+  flex: 0 0 auto;
+  overflow: visible;
+}
+
+html[data-surface="sidepanel"] #panel-scan:has(
+    #result-wrap:not([hidden]),
+    #error-msg:not([hidden])
+  )
+  .recent-block:not([hidden]) {
+  flex: 0 0 auto;
+}
+
+html[data-surface="sidepanel"] #panel-scan:has(
+    #result-wrap:not([hidden]),
+    #error-msg:not([hidden])
+  )
+  .recent-list {
+  flex: 0 1 auto;
+  max-height: min(11rem, 32vh);
+}
+
+html[data-surface="sidepanel"] #panel-scan .recent-head,
+html[data-surface="sidepanel"] #panel-scan .recent-tabs {
+  flex-shrink: 0;
+}
+
+html[data-surface="sidepanel"] #panel-scan .recent-block:not([hidden]) {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0;
+}
+
+html[data-surface="sidepanel"] #panel-scan .recent-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+}
+
+html[data-surface="sidepanel"] #panel-news:not([hidden]),
+html[data-surface="sidepanel"] #panel-usom:not([hidden]) {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+html[data-surface="sidepanel"] .news-panel,
+html[data-surface="sidepanel"] .usom-panel {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+html[data-surface="sidepanel"] .news-head,
+html[data-surface="sidepanel"] .usom-head,
+html[data-surface="sidepanel"] .news-updated-at,
+html[data-surface="sidepanel"] .usom-updated-at,
+html[data-surface="sidepanel"] .news-status:not([hidden]),
+html[data-surface="sidepanel"] .usom-status:not([hidden]) {
+  flex-shrink: 0;
+}
+
+html[data-surface="sidepanel"] .news-list,
+html[data-surface="sidepanel"] .usom-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+}
+
+html[data-surface="sidepanel"] .result-card-body {
+  max-height: min(42vh, 380px);
+}
+
+/* Side panel: compact header tuned for Chrome minimum width (~360px). */
+html[data-surface="sidepanel"] .header {
+  container-type: inline-size;
+  container-name: vt-header;
+  padding: 0.38rem 0.28rem 0.48rem 0.14rem;
+  column-gap: 0.38rem;
+}
+
+html[data-surface="sidepanel"] .header-start {
+  gap: 0.28rem;
+}
+
+html[data-surface="sidepanel"] .Character--mark {
+  --pixel-size: 2;
+}
+
+html[data-surface="sidepanel"] .title {
+  font-size: 0.9rem;
+}
+
+html[data-surface="sidepanel"] .title-brand {
+  flex-shrink: 0;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: nowrap;
+}
+
+html[data-surface="sidepanel"] .title-badge {
+  flex-shrink: 0;
+}
+
+html[data-surface="sidepanel"] .brand-copy {
+  gap: 0.18rem;
+}
+
+html[data-surface="sidepanel"] .conn-status:not([hidden]) {
+  flex-shrink: 0;
+  font-size: 0.56rem;
+  padding: 0.16rem 0.34rem;
+}
+
+html[data-surface="sidepanel"] .header-actions {
+  gap: 0.2rem;
+}
+
+html[data-surface="sidepanel"] .btn-icon {
+  width: 2rem;
+  height: 2rem;
+  min-width: 2rem;
+  min-height: 2rem;
+  font-size: 0.88rem;
+}
+

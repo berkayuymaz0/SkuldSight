@@ -4,9 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PixelPaw SOC — Settings</title>
-  <link rel="stylesheet" href="tokens.css" />
-  <link rel="stylesheet" href="base.css" />
-  <link rel="stylesheet" href="options.css" />
+  <link rel="stylesheet" href="../../styles/tokens.css" />
+  <link rel="stylesheet" href="../../styles/base.css" />
+  <link rel="stylesheet" href="../../styles/options/base.css" />
+  <link rel="stylesheet" href="../../styles/options/layout.css" />
+  <link rel="stylesheet" href="../../styles/options/dashboard.css" />
 </head>
 <body>
   <header class="topbar">
@@ -869,8 +871,15 @@
     <span id="toast-text">Saved</span>
   </div>
 
-  <script src="utils.js"></script>
-  <script src="i18n.js"></script>
-  <script src="options.js"></script>
+  <script src="../shared/utils/core.js"></script>
+  <script src="../shared/utils/analytics.js"></script>
+  <script src="../shared/utils/summary.js"></script>
+  <script src="../shared/utils/presets.js"></script>
+  <script src="../shared/utils/ioc.js"></script>
+  <script src="../shared/i18n.js"></script>
+  <script src="state.js"></script>
+  <script src="settings.js"></script>
+  <script src="analytics.js"></script>
+  <script src="init.js"></script>
 </body>
 </html>

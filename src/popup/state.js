@@ -1,0 +1,163 @@
+  if (new URLSearchParams(location.search).get('surface') === 'sidepanel') {
+    document.documentElement.setAttribute('data-surface', 'sidepanel');
+  }
+
+  const utils = window.VtSocUtils;
+  /** Max wait for a single-scan result before showing a timeout error (SW may have restarted). */
+  const SINGLE_SCAN_TIMEOUT_MS = 180000;
+
+  const input = document.getElementById('ioc-input');
+  const inputSurfaceCard = document.getElementById('input-surface-card');
+  const btnScanInputExpand = document.getElementById('btn-scan-input-expand');
+  const scanCompactPreview = document.getElementById('scan-compact-preview');
+  const presetQuick = document.getElementById('preset-quick');
+  const presetDetailed = document.getElementById('preset-detailed');
+  const presetAnalyst = document.getElementById('preset-analyst');
+  const btnScan = document.getElementById('btn-scan');
+  const btnFileAction = document.getElementById('btn-file-action');
+  const btnOptions = document.getElementById('btn-options');
+  const btnOptionsInline = document.getElementById('btn-options-inline');
+  const btnLangToggle = document.getElementById('btn-lang-toggle');
+  const langToggleLabel = document.getElementById('lang-toggle-label');
+  const btnThemeToggle = document.getElementById('btn-theme-toggle');
+  const btnCopySummary = document.getElementById('btn-copy-summary');
+  const btnClearRecent = document.getElementById('btn-clear-recent');
+  const connStatus = document.getElementById('conn-status');
+  const batchWrap = document.getElementById('batch-wrap');
+  const btnBatchDownload = document.getElementById('btn-batch-download');
+  const batchProgressLabel = document.getElementById('batch-progress-label');
+  const batchBarFill = document.getElementById('batch-bar-fill');
+  const batchLinesEl = document.getElementById('batch-lines');
+  const resultWrap = document.getElementById('result-wrap');
+  const btnResultClose = document.getElementById('btn-result-close');
+  const resultCard = document.getElementById('result-card');
+  const resultKind = document.getElementById('result-kind');
+  const resultIoc = document.getElementById('result-ioc');
+  const resultVerdict = document.getElementById('result-verdict');
+  const resultThreatDashboard = document.getElementById('result-threat-dashboard');
+  const resultChart = document.getElementById('result-chart');
+  const resultChartRatio = document.getElementById('result-chart-ratio');
+  const resultChartBar = document.getElementById('result-chart-bar');
+  const resultChartLegend = document.getElementById('result-chart-legend');
+  const resultVtEmpty = document.getElementById('result-vt-empty');
+  const resultVtPill = document.getElementById('result-vt-pill');
+  const btnVtReanalyze = document.getElementById('btn-vt-reanalyze');
+  const vtReanalyzeStatus = document.getElementById('result-vt-reanalyze-status');
+  const resultAbuseCard = document.getElementById('result-abuse-card');
+  const resultAbusePill = document.getElementById('result-abuse-pill');
+  const resultEngineBlock = document.getElementById('result-engine-block');
+  const resultEngineSummary = document.getElementById('result-engine-summary');
+  const resultEngineList = document.getElementById('result-engine-list');
+  const resultRelBlock = document.getElementById('result-rel-block');
+  const resultRelCaption = document.getElementById('result-rel-caption');
+  const resultRelError = document.getElementById('result-rel-error');
+  const resultRelList = document.getElementById('result-rel-list');
+  const resultMitreBlock = document.getElementById('result-mitre-block');
+  const resultMitreError = document.getElementById('result-mitre-error');
+  const resultMitreMeta = document.getElementById('result-mitre-meta');
+  const resultMitreList = document.getElementById('result-mitre-list');
+  const resultDetailsBlock = document.getElementById('result-details-block');
+  const resultDetailsEl = document.getElementById('result-details');
+  const resultEngineDetails = document.getElementById('result-engine-details');
+  const resultRelDetails = document.getElementById('result-rel-details');
+  const resultMitreDetails = document.getElementById('result-mitre-details');
+  const resultDetailsCollapsible = document.getElementById('result-details-collapsible');
+  const resultLiveAnnounce = document.getElementById('result-live-announce');
+  const resultHeroSubline = document.getElementById('result-hero-subline');
+  const resultHeroTags = document.getElementById('result-hero-tags');
+  const resultHeroChips = document.getElementById('result-hero-chips');
+  const resultReputation = document.getElementById('result-reputation');
+  const resultRepSep = document.getElementById('result-rep-sep');
+  const scanQuotaHint = document.getElementById('scan-quota-hint');
+  const copyToast = document.getElementById('copy-toast');
+  const resultLink = document.getElementById('result-link');
+  const resultAbuseBlock = document.getElementById('result-abuse-block');
+  const errorMsg = document.getElementById('error-msg');
+  const noKeyHint = document.getElementById('no-key-hint');
+  const queueBadge = document.getElementById('queue-badge');
+  const recentList = document.getElementById('recent-list');
+  const recentEmpty = document.getElementById('recent-empty');
+  const recentTabGeneral = document.getElementById('recent-tab-general');
+  const recentTabBatch = document.getElementById('recent-tab-batch');
+  const recentPanelGeneral = document.getElementById('recent-panel-general');
+  const recentPanelBatch = document.getElementById('recent-panel-batch');
+  const batchHistoryList = document.getElementById('batch-history-list');
+  const batchHistoryEmpty = document.getElementById('batch-history-empty');
+  const fileIocList = document.getElementById('file-ioc-list');
+  const tabScan = document.getElementById('tab-scan');
+  const tabNews = document.getElementById('tab-news');
+  const tabUsom = document.getElementById('tab-usom');
+  const panelScan = document.getElementById('panel-scan');
+  const panelNews = document.getElementById('panel-news');
+  const panelUsom = document.getElementById('panel-usom');
+  const btnNewsRefresh = document.getElementById('btn-news-refresh');
+  const newsUpdatedAt = document.getElementById('news-updated-at');
+  const newsStatus = document.getElementById('news-status');
+  const newsList = document.getElementById('news-list');
+  const newsEmpty = document.getElementById('news-empty');
+  const newsSourceFilter = document.getElementById('news-source-filter');
+  const newsSearch = document.getElementById('news-search');
+  const btnUsomRefresh = document.getElementById('btn-usom-refresh');
+  const usomUpdatedAt = document.getElementById('usom-updated-at');
+  const usomStatus = document.getElementById('usom-status');
+  const usomList = document.getElementById('usom-list');
+  const usomEmpty = document.getElementById('usom-empty');
+  const usomSearch = document.getElementById('usom-search');
+  const characterSprite = document.querySelector('.Character_spritesheet');
+  const mascotBubble = document.getElementById('mascot-bubble');
+  const mascotHost = document.querySelector('.header-mascot');
+  const SK = utils.STORAGE_KEYS;
+  const NEWS_READ_MAP_KEY = SK.newsReadMap;
+  /** Mirror background.js cache keys so popup follows SW-only auto refresh (alarms). */
+  const VT_NEWS_CACHE_KEY = SK.newsCache;
+  const VT_NEWS_FETCHED_AT_KEY = SK.newsFetchedAt;
+  const VT_USOM_CACHE_KEY = SK.usomCache;
+  const VT_USOM_FETCHED_AT_KEY = SK.usomFetchedAt;
+  const POPUP_ACTIVE_TAB_KEY = SK.popupActiveTab;
+  /** Pending external scan; shown once then removed from storage. */
+  const CONTEXT_SCAN_RESULT_KEY = SK.contextScanResult;
+  const COPY_SUMMARY_FIELDS_KEY = SK.copySummaryFields;
+  const SCAN_PRESET_KEY = SK.scanPreset;
+  const SCAN_PRESETS_KEY = SK.scanPresets;
+  let scanPresets = utils.normalizeScanPresetsMap(null);
+
+  let queueTimer = null;
+  let lastResultPayload = null;
+  let singleScanTimer = null;
+  /** Bumped when a new scan starts; port/timeouts ignore callbacks from older sessions. */
+  let scanSessionId = 0;
+  /** Bumped when a recent entry open request starts; stale async callbacks are ignored. */
+  let recentOpenRequestId = 0;
+  let lastBatchExportRows = [];
+  let lastBatchSummaryRows = [];
+  let lastBatchSourceLines = [];
+  let lastImportedFileName = '';
+  let copyToastTimer = null;
+  let scrollResultDelayTimer = null;
+  let activeTab = 'scan';
+  let newsLoading = false;
+  let usomLoading = false;
+  let lastNewsPayload = null;
+  let lastUsomPayload = null;
+  let newsSourceValue = 'all';
+  let newsSearchValue = '';
+  let usomSearchValue = '';
+  let expandedUsomKey = '';
+  let usomDetailCache = {};
+  let newsReadMap = {};
+  let newsNewKeys = {};
+  let activeRecentTab = 'general';
+  let copySummaryFields = null;
+  let characterTurnTimer = null;
+  let characterPauseTimer = null;
+  let lastMascotBubbleIndex = -1;
+  let nextBubbleKind = 'humor';
+  let nextTechnicalCategoryIndex = 0;
+  let batchUseAbuse = true;
+  let vtReanalyzeStatusIocKey = '';
+
+  const MASCOT_BUBBLES = window.VT_MASCOT_BUBBLES || {
+    tr: { humor: [], technical: {} },
+    en: { humor: [], technical: {} }
+  };
+

@@ -15,6 +15,43 @@ Chrome extension (Manifest V3) for IoC lookups via VirusTotal, optional AbuseIPD
 1. Open `chrome://extensions` and enable **Developer mode**
 2. Click **Load unpacked** and select this project folder
 
+## Project structure
+
+No build step — the extension is loaded unpacked and all scripts run in a shared
+global namespace (no ES modules / bundler).
+
+```text
+manifest.json            Entry point: paths, permissions, content scripts, CSP
+assets/                  icons/ (toolbar + store) and pixel/ (mascot sprites)
+styles/                  tokens.css + base.css (shared) and popup/, options/ parts
+src/
+  shared/                Cross-surface code
+    utils/               VtSocUtils namespace, split by domain (core, analytics,
+                         summary, presets, ioc)
+    i18n.js
+  background/            Service worker; background.js orchestrates importScripts
+                         of config, settings-uimode, feeds, vt-client, vt-parse,
+                         abuse, scan, analytics, messaging
+  popup/                 popup.html + state/ui-helpers/feeds/result/scan parts
+  options/               options.html + state/settings/analytics/init parts
+  content/               content-utils.js + detect/panel/scan/observe parts
+docs/                    SECURITY_HARDENING_CHECKLIST.md
+```
+
+### Load order matters
+
+Because there is no module system, every file shares one global scope and the
+**load order acts as the import graph**. Shared/namespace files must load before
+their consumers:
+
+- HTML pages: the `<script>` order in `popup.html` / `options.html`
+  (`shared/utils/*` → `i18n.js` → page parts; page entry/init parts load last).
+- Service worker: the `importScripts(...)` order in `background/background.js`
+  (config/state first, `messaging.js` listeners last).
+- Content scripts: the `content_scripts.js` array order in `manifest.json`.
+
+When adding a file, register it in the correct place above and respect the order.
+
 ## Configuration
 
 In **Settings**:
@@ -28,9 +65,22 @@ Keys are stored in `chrome.storage.local` only (14-day TTL). Rotate API keys per
 
 ## Security
 
-See [`SECURITY_HARDENING_CHECKLIST.md`](SECURITY_HARDENING_CHECKLIST.md) before release.
+See [`docs/SECURITY_HARDENING_CHECKLIST.md`](docs/SECURITY_HARDENING_CHECKLIST.md) before release.
 
 ## Changelog
+
+### [Unreleased] — 2026-05-31
+
+**Changed**
+- Project restructured into a professional layout (`src/{shared,background,popup,options,content}`, `styles/`, `assets/`, `docs/`) with no build step; see [Project structure](#project-structure).
+- Large monoliths split into logical modules (behavior preserved, verified byte-for-byte):
+  - `utils.js` → `src/shared/utils/{core,analytics,summary,presets,ioc}.js` (shared `VtSocUtils` namespace)
+  - `background.js` → `src/background/{config,settings-uimode,feeds,vt-client,vt-parse,abuse,scan,analytics,messaging}.js` orchestrated via `importScripts`
+  - `popup.js` / `options.js` / `content.js` → per-surface part files loaded in dependency order
+  - `popup.css` / `options.css` → `styles/{popup,options}/*.css` parts
+
+**Fixed**
+- Side panel / popup opening after restructure: runtime `setPopup` / `sidePanel.setOptions` paths now point to `src/popup/popup.html` (was root-relative `popup.html`, causing `ERR_FILE_NOT_FOUND`).
 
 ### [1.0.3] — 2026-05-30
 

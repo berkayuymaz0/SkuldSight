@@ -1,3 +1,35 @@
+(function (NS) {
+  const utils = NS.utils;
+  const dom = NS.dom;
+  const state = NS.state;
+  const presetInputs = NS.presetInputs;
+  const SCAN_PRESETS_KEY = NS.SCAN_PRESETS_KEY;
+  const COPY_SUMMARY_FIELDS_KEY = NS.COPY_SUMMARY_FIELDS_KEY;
+  const ANALYTICS_KEY = NS.ANALYTICS_KEY;
+  const OPTIONS_DASHBOARD_KEYS = NS.OPTIONS_DASHBOARD_KEYS;
+  const t = NS.t;
+  const showToast = NS.showToast;
+  const chromeErrorMessage = NS.chromeErrorMessage;
+  const setButtonBusy = NS.setButtonBusy;
+  const applyOptionsLang = NS.applyOptionsLang;
+  const applyOptionsTheme = NS.applyOptionsTheme;
+  const bindUiModePicker = NS.bindUiModePicker;
+  const syncUiModeInputs = NS.syncUiModeInputs;
+  const updateRateLabel = NS.updateRateLabel;
+  const syncRateControlState = NS.syncRateControlState;
+  const clampRateSec = NS.clampRateSec;
+  const isApiKeyExpired = NS.isApiKeyExpired;
+  const setCopySummaryFieldsToForm = NS.setCopySummaryFieldsToForm;
+  const readCopySummaryFieldsFromForm = NS.readCopySummaryFieldsFromForm;
+  const normalizeCopySummaryFields = NS.normalizeCopySummaryFields;
+  const defaultCopySummaryFields = NS.defaultCopySummaryFields;
+  const applyCopySummaryPreset = NS.applyCopySummaryPreset;
+  const renderPresetInputs = NS.renderPresetInputs;
+  const resetScanPresetsToDefaults = NS.resetScanPresetsToDefaults;
+  const readPresetInputs = NS.readPresetInputs;
+  const renderAnalytics = NS.renderAnalytics;
+  const refreshAnalytics = NS.refreshAnalytics;
+
   // Analitik yenilemeyi requestAnimationFrame ile tek karede birleştirir (gereksiz tekrarları önler).
   function scheduleAnalyticsRefresh(force) {
     if (state.analyticsQueued && force !== true) {
@@ -484,3 +516,4 @@
       scheduleAnalyticsRefresh(false);
     }
   });
+})(window.VtOptions = window.VtOptions || {});

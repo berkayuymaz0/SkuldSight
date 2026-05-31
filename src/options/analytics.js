@@ -1,3 +1,21 @@
+(function (NS) {
+  const utils = NS.utils;
+  const dom = NS.dom;
+  const state = NS.state;
+  const SVG_NS = NS.SVG_NS;
+  const KIND_ORDER = NS.KIND_ORDER;
+  const TIMELINE_DAYS = NS.TIMELINE_DAYS;
+  const normalizeAnalytics = NS.normalizeAnalytics;
+  const t = NS.t;
+  const serialize = NS.serialize;
+  const summarizeBatch = NS.summarizeBatch;
+  const dayKey = NS.dayKey;
+  const showToast = NS.showToast;
+  const chromeErrorMessage = NS.chromeErrorMessage;
+  const setAnalyticsBusy = NS.setAnalyticsBusy;
+  const ANALYTICS_KEY = NS.ANALYTICS_KEY;
+  const OPTIONS_DASHBOARD_KEYS = NS.OPTIONS_DASHBOARD_KEYS;
+
   // Zaman çizelgesi ekseni için gün/ay kısa etiket (GG/AA) üretir.
   function shortDayLabel(d) {
     return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0');
@@ -130,7 +148,13 @@
     }
     const div = document.createElement('div');
     div.className = 'chart-empty';
-    div.textContent = text;
+    div.innerHTML =
+      '<svg class="chart-empty-icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" ' +
+      'fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' +
+      '<path d="M3 3v18h18" /><path d="M7 14l3-3 3 2 4-5" />' +
+      '</svg>' +
+      '<span class="chart-empty-text"></span>';
+    div.querySelector('.chart-empty-text').textContent = text;
     node.appendChild(div);
   }
 
@@ -493,4 +517,9 @@
       setAnalyticsBusy(false);
     });
   }
+
+  NS.kindLabel = kindLabel;
+  NS.renderAnalytics = renderAnalytics;
+  NS.refreshAnalytics = refreshAnalytics;
+})(window.VtOptions = window.VtOptions || {});
 

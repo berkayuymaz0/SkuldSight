@@ -1,3 +1,6 @@
+// Options modules share state through the window.VtOptions namespace.
+// Load order (see options.html): state -> settings -> analytics -> init.
+(function (NS) {
   const utils = window.VtSocUtils;
   const SVG_NS = 'http://www.w3.org/2000/svg';
   const SK = utils.STORAGE_KEYS;
@@ -111,4 +114,19 @@
       abuseOverall: document.getElementById('preset-analyst-abuse-overall')
     }
   };
+
+  NS.utils = utils;
+  NS.SVG_NS = SVG_NS;
+  NS.SK = SK;
+  NS.SCAN_PRESETS_KEY = SCAN_PRESETS_KEY;
+  NS.COPY_SUMMARY_FIELDS_KEY = COPY_SUMMARY_FIELDS_KEY;
+  NS.ANALYTICS_KEY = ANALYTICS_KEY;
+  NS.OPTIONS_DASHBOARD_KEYS = OPTIONS_DASHBOARD_KEYS;
+  NS.KIND_ORDER = KIND_ORDER;
+  NS.TIMELINE_DAYS = TIMELINE_DAYS;
+  NS.normalizeAnalytics = normalizeAnalytics;
+  NS.dom = dom;
+  NS.state = state;
+  NS.presetInputs = presetInputs;
+})(window.VtOptions = window.VtOptions || {});
 

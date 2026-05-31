@@ -21,6 +21,11 @@
   --shadow-sm: 0 8px 24px rgba(2, 6, 23, 0.22);
   --font-ui: var(--vt-font-ui);
   --font-mono: var(--vt-font-mono);
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
 }
 
 html,
@@ -51,9 +56,9 @@ body {
 }
 
 .topbar-inner {
-  width: min(100%, 1400px);
+  width: min(100%, 1240px);
   margin: 0 auto;
-  padding: 0.75rem clamp(0.9rem, 2vw, 1.6rem);
+  padding: 0.62rem 1rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -111,8 +116,8 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  padding: 0.42rem 0.6rem;
-  border-radius: 10px;
+  padding: 0.34rem 0.54rem;
+  border-radius: 9px;
   border: 1px solid var(--border);
   background: rgba(15, 23, 42, 0.6);
   color: var(--muted);
@@ -138,7 +143,7 @@ body {
   outline: none;
   color: var(--text);
   font-family: inherit;
-  font-size: 0.86rem;
+  font-size: 0.82rem;
   padding-right: 0.4rem;
   cursor: pointer;
 }
@@ -149,18 +154,18 @@ body {
 }
 
 .wrap {
-  width: min(100%, 1400px);
+  width: min(100%, 1240px);
   margin: 0 auto;
   padding: clamp(1rem, 2.4vw, 1.8rem) clamp(0.9rem, 2vw, 1.6rem) 0;
   display: flex;
   flex-direction: column;
-  gap: clamp(1.2rem, 2.4vw, 2rem);
+  gap: var(--space-4);
 }
 
 .section {
   display: flex;
   flex-direction: column;
-  gap: clamp(0.85rem, 1.4vw, 1.2rem);
+  gap: var(--space-3);
 }
 
 .section-analytics {
@@ -174,7 +179,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  padding: 0 0 0.7rem;
+  padding: 0 0 var(--space-3);
   border-bottom: 1px solid var(--border);
   position: relative;
 }
@@ -192,7 +197,7 @@ body {
 
 .section-title {
   margin: 0;
-  font-size: clamp(1.1rem, 1.4vw, 1.32rem);
+  font-size: clamp(1.02rem, 1.1vw, 1.2rem);
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--text);
@@ -200,7 +205,7 @@ body {
 
 .section-sub {
   margin: 0;
-  font-size: 0.83rem;
+  font-size: 0.78rem;
   color: var(--muted);
   line-height: 1.45;
 }
@@ -208,7 +213,7 @@ body {
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: clamp(0.6rem, 0.9vw, 0.9rem);
+  gap: var(--space-3);
   align-items: stretch;
 }
 
@@ -216,8 +221,8 @@ body {
   display: flex;
   align-items: center;
   gap: 0.85rem;
-  padding: 1rem 1.1rem;
-  border-radius: var(--radius);
+  padding: 0.76rem 0.85rem;
+  border-radius: 12px;
   border: 1px solid var(--border);
   background: linear-gradient(160deg, rgba(23, 34, 58, 0.92), rgba(15, 23, 42, 0.9));
   box-shadow: var(--shadow-sm);

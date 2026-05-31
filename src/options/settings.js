@@ -1,3 +1,11 @@
+(function (NS) {
+  const utils = NS.utils;
+  const dom = NS.dom;
+  const state = NS.state;
+  const presetInputs = NS.presetInputs;
+  const KIND_ORDER = NS.KIND_ORDER;
+  const SCAN_PRESETS_KEY = NS.SCAN_PRESETS_KEY;
+
   // Ayarlar sayfasında VT_I18N üzerinden çeviri anahtarını çözer.
   function t(key, vars) {
     return VT_I18N.t(key, vars);
@@ -383,7 +391,7 @@
       const tr = document.createElement('tr');
       const tdKind = document.createElement('th');
       tdKind.scope = 'row';
-      tdKind.textContent = kindLabel(kind);
+      tdKind.textContent = NS.kindLabel(kind);
       tr.appendChild(tdKind);
       const abuseCell = kind === 'ip' ? utils.abusePresetSummaryCode(rowCfg) : '—';
       [
@@ -536,4 +544,30 @@
   }
 
   const dayKey = utils.dayKeyFromTs;
+
+  NS.t = t;
+  NS.applyOptionsLang = applyOptionsLang;
+  NS.applyOptionsTheme = applyOptionsTheme;
+  NS.syncUiModeInputs = syncUiModeInputs;
+  NS.bindUiModePicker = bindUiModePicker;
+  NS.showToast = showToast;
+  NS.serialize = serialize;
+  NS.summarizeBatch = summarizeBatch;
+  NS.setButtonBusy = setButtonBusy;
+  NS.setAnalyticsBusy = setAnalyticsBusy;
+  NS.chromeErrorMessage = chromeErrorMessage;
+  NS.updateRateLabel = updateRateLabel;
+  NS.syncRateControlState = syncRateControlState;
+  NS.clampRateSec = clampRateSec;
+  NS.isApiKeyExpired = isApiKeyExpired;
+  NS.defaultCopySummaryFields = defaultCopySummaryFields;
+  NS.normalizeCopySummaryFields = normalizeCopySummaryFields;
+  NS.setCopySummaryFieldsToForm = setCopySummaryFieldsToForm;
+  NS.readCopySummaryFieldsFromForm = readCopySummaryFieldsFromForm;
+  NS.applyCopySummaryPreset = applyCopySummaryPreset;
+  NS.renderPresetInputs = renderPresetInputs;
+  NS.resetScanPresetsToDefaults = resetScanPresetsToDefaults;
+  NS.readPresetInputs = readPresetInputs;
+  NS.dayKey = dayKey;
+})(window.VtOptions = window.VtOptions || {});
 

@@ -103,7 +103,12 @@ chrome.contextMenus.onClicked.addListener(function (info) {
   }
   handleScanInput(text, 'context').catch(function (err) {
     const msg = err && err.message ? err.message : 'Scan failed';
-    const errPayload = { ok: false, error: msg };
+    const errPayload = {
+      ok: false,
+      error: msg,
+      errorKey: err && err.errorKey ? err.errorKey : '',
+      errorVars: err && err.errorVars ? err.errorVars : {}
+    };
     persistContextScanResult(errPayload, text)
       .then(function () {
         return notifyContextMenuScanOutcome(errPayload);
@@ -382,7 +387,8 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
   }
   const handler = backgroundMessageHandlers[message.type];
   if (!handler) {
-    return;
+    sendResponse({ ok: false, error: 'unknown_message_type' });
+    return false;
   }
   return handler(message, sendResponse);
 });

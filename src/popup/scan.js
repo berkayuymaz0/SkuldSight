@@ -476,18 +476,25 @@
   }
 
   // downloadBatchCsv: Popup DOM veya kullanıcı etkileşimi ile ilgili.
+  // downloadCsvBlob: CSV metnini blob olarak indirir (BOM çağıran tarafça eklenir).
+  function downloadCsvBlob(csvText, filename) {
+    const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   function downloadBatchCsv() {
     if (!lastBatchExportRows.length) {
       return;
     }
-    const csv = '\ufeff' + buildBatchCsv(lastBatchExportRows);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'vt-batch-' + new Date().toISOString().replace(/[:.]/g, '-') + '.csv';
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadCsvBlob(
+      '\ufeff' + buildBatchCsv(lastBatchExportRows),
+      'vt-batch-' + new Date().toISOString().replace(/[:.]/g, '-') + '.csv'
+    );
   }
 
   // setBatchLineStatus: Popup DOM veya kullanıcı etkileşimi ile ilgili.
@@ -502,6 +509,9 @@
 
   // runBatchScan: Popup DOM veya kullanıcı etkileşimi ile ilgili.
   function runBatchScan(lines, session) {
+    if (!resultWrap || !batchWrap || !batchLinesEl || !batchBarFill || !batchProgressLabel) {
+      return;
+    }
     const total = lines.length;
     initBatchExport(lines);
     hideError();
@@ -555,7 +565,6 @@
 
       const port = chrome.runtime.connect({ name: 'vt-batch' });
       let completed = 0;
-      let lastBatchOk = null;
       let batchEndExpected = false;
       const processedBatchIndexes = new Set();
 
@@ -611,7 +620,6 @@
             }
           }
           if (msg.ok) {
-            lastBatchOk = msg;
             const tl = msg.threatLevel || 'clean';
             let cls = 'is-clean';
             if (tl === 'malicious') {
@@ -900,10 +908,19 @@
     payload.threatLevelVt = vtLevel;
     if (abuse.ok === true && abuse.score != null && isFinite(abuse.score)) {
       const score = Number(abuse.score);
-      payload.threatLevelAbuse =
+      const abuseLevel =
         score >= 75 ? 'malicious' : score >= 50 ? 'suspicious' : 'clean';
+      payload.threatLevelAbuse = abuseLevel;
+      /* Hero birleşik seviyesi VT + Abuse'tan yeniden hesaplanır (arka plan ile aynı kural). */
+      payload.threatLevel =
+        vtLevel === 'malicious' || abuseLevel === 'malicious'
+          ? 'malicious'
+          : vtLevel === 'suspicious' || abuseLevel === 'suspicious'
+            ? 'suspicious'
+            : 'clean';
     } else if (abuse.error === 'not_configured') {
-      payload.threatLevelAbuse = payload.threatLevelAbuse || 'clean';
+      payload.threatLevelAbuse = payload.threatLevelAbuse || 'unknown';
+      payload.threatLevel = vtLevel;
     }
     return payload;
   }
@@ -1059,15 +1076,10 @@
       showCopyToast(t('batchActionNoTable'));
       return;
     }
-    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download =
+    const filename =
       (entry && entry.csvFileName ? String(entry.csvFileName) : '') ||
       'vt-batch-history-' + new Date(entry && entry.ts ? entry.ts : Date.now()).toISOString().replace(/[:.]/g, '-') + '.csv';
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadCsvBlob('\ufeff' + csv, filename);
   }
 
   // loadBatchHistoryList: Popup DOM veya kullanıcı etkileşimi ile ilgili.
@@ -1433,20 +1445,34 @@
       }
     });
   }
+  let newsSearchDebounce = null;
+  let usomSearchDebounce = null;
   if (newsSearch) {
     newsSearch.addEventListener('input', function () {
       newsSearchValue = String(newsSearch.value || '');
-      if (lastNewsPayload) {
-        renderNews(lastNewsPayload);
+      if (newsSearchDebounce !== null) {
+        window.clearTimeout(newsSearchDebounce);
       }
+      newsSearchDebounce = window.setTimeout(function () {
+        newsSearchDebounce = null;
+        if (lastNewsPayload) {
+          renderNews(lastNewsPayload);
+        }
+      }, 120);
     });
   }
   if (usomSearch) {
     usomSearch.addEventListener('input', function () {
       usomSearchValue = String(usomSearch.value || '');
-      if (lastUsomPayload) {
-        renderUsom(lastUsomPayload);
+      if (usomSearchDebounce !== null) {
+        window.clearTimeout(usomSearchDebounce);
       }
+      usomSearchDebounce = window.setTimeout(function () {
+        usomSearchDebounce = null;
+        if (lastUsomPayload) {
+          renderUsom(lastUsomPayload);
+        }
+      }, 120);
     });
   }
 

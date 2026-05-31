@@ -456,14 +456,13 @@
             <h2 id="title-copy-summary" data-i18n="optCopySummaryTemplateTitle">Copy summary fields</h2>
             <p class="sub" data-i18n="optCopySummaryTemplateSub">Choose which lines are included in copied summary per IoC type.</p>
           </div>
-          <form id="copy-summary-form" class="form blacklist-form">
-            <div class="blacklist-panel">
-              <p id="copy-summary-hint-text" class="blacklist-hint" data-i18n="optCopySummaryTemplateHint">
-                Select fields for each IoC type. Only applicable fields are shown.
-              </p>
-            </div>
+          <form id="copy-summary-form" class="form copy-summary-form">
+            <p id="copy-summary-hint-text" class="copy-summary-hint" data-i18n="optCopySummaryTemplateHint">
+              Select fields for each IoC type. Only applicable fields are shown.
+            </p>
 
             <div class="copy-summary-toolbar">
+              <span class="copy-seg-label" data-i18n="optCopyPresetLabel">Preset</span>
               <div class="copy-summary-presets" role="group" aria-label="Copy summary presets">
                 <button type="button" id="btn-copy-preset-minimal" class="btn btn-secondary" data-i18n="optCopyPresetMinimal">Minimal</button>
                 <button type="button" id="btn-copy-preset-analyst" class="btn btn-secondary" data-i18n="optCopyPresetAnalyst">Analyst</button>
@@ -475,11 +474,39 @@
               <table class="copy-matrix" role="grid" aria-label="Copy summary field matrix">
                 <thead>
                   <tr>
-                    <th data-i18n="optCopyMatrixField">Field</th>
-                    <th>IP</th>
-                    <th>Domain</th>
-                    <th>URL</th>
-                    <th>File</th>
+                    <th class="copy-matrix-field-head" data-i18n="optCopyMatrixField">Field</th>
+                    <th>
+                      <span class="copy-col">
+                        <span class="copy-col-icon" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M7 7h.01M7 17h.01"/></svg>
+                        </span>
+                        <span class="copy-col-text">IP</span>
+                      </span>
+                    </th>
+                    <th>
+                      <span class="copy-col">
+                        <span class="copy-col-icon" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18"/></svg>
+                        </span>
+                        <span class="copy-col-text">Domain</span>
+                      </span>
+                    </th>
+                    <th>
+                      <span class="copy-col">
+                        <span class="copy-col-icon" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1.5 1.5"/><path d="M14 11a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1.5-1.5"/></svg>
+                        </span>
+                        <span class="copy-col-text">URL</span>
+                      </span>
+                    </th>
+                    <th>
+                      <span class="copy-col">
+                        <span class="copy-col-icon" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v5h5"/><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z"/></svg>
+                        </span>
+                        <span class="copy-col-text">File</span>
+                      </span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody></tbody>

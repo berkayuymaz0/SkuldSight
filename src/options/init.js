@@ -25,6 +25,7 @@
   const defaultCopySummaryFields = NS.defaultCopySummaryFields;
   const applyCopySummaryPreset = NS.applyCopySummaryPreset;
   const renderPresetInputs = NS.renderPresetInputs;
+  const renderPresetMatrix = NS.renderPresetMatrix;
   const resetScanPresetsToDefaults = NS.resetScanPresetsToDefaults;
   const readPresetInputs = NS.readPresetInputs;
   const renderAnalytics = NS.renderAnalytics;
@@ -347,6 +348,36 @@
     });
   }
 
+  // Form girdilerinden ilgili preset'in salt okunur özet matrisini canlı günceller.
+  function refreshPresetMatrixFromForm(name) {
+    if (!renderPresetMatrix) {
+      return;
+    }
+    const map = utils.normalizeScanPresetsMap(readPresetInputs());
+    renderPresetMatrix(name, map[name]);
+  }
+
+  // Bir preset satırındaki tüm girdileri matris tazelemesine bağlar.
+  function bindPresetMatrixLiveUpdate() {
+    ['quick', 'detailed', 'analyst'].forEach(function (name) {
+      const row = presetInputs[name];
+      if (!row) {
+        return;
+      }
+      ['rel', 'relSec', 'engine', 'mitre', 'abuseReports', 'abuseWindow', 'abuseOverall'].forEach(
+        function (field) {
+          const el = row[field];
+          if (el && el.addEventListener) {
+            el.addEventListener('change', function () {
+              refreshPresetMatrixFromForm(name);
+            });
+          }
+        }
+      );
+    });
+  }
+  bindPresetMatrixLiveUpdate();
+
   function bindAbusePresetListeners() {
     ['quick', 'detailed', 'analyst'].forEach(function (name) {
       const row = presetInputs[name];
@@ -401,7 +432,7 @@
 
   if (dom.btnClearHistory) {
     dom.btnClearHistory.addEventListener('click', function () {
-      if (!window.confirm('Clear recent lookups? This cannot be undone.')) {
+      if (!window.confirm(t('optConfirmClearHistory'))) {
         return;
       }
       setButtonBusy(dom.btnClearHistory, true);
@@ -418,7 +449,7 @@
 
   if (dom.btnClearBatch) {
     dom.btnClearBatch.addEventListener('click', function () {
-      if (!window.confirm('Clear batch history? This cannot be undone.')) {
+      if (!window.confirm(t('optConfirmClearBatch'))) {
         return;
       }
       setButtonBusy(dom.btnClearBatch, true);

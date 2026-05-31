@@ -247,24 +247,84 @@
     return s.slice(0, h) + '…' + s.slice(-t);
   }
 
-  // detectIocKind: Popup kota ipucu için hafif IoC sınıflandırma.
+  // isIpv6: Strict-ish IPv6 doğrulayıcı (tek '::', isteğe bağlı IPv4 sonu, zone id).
+  function isIpv6(raw) {
+    let s = String(raw || '').trim();
+    if (s.startsWith('[') && s.endsWith(']')) {
+      s = s.slice(1, -1);
+    }
+    const pct = s.indexOf('%');
+    if (pct !== -1) {
+      s = s.slice(0, pct);
+    }
+    if (!s || s.indexOf(':') === -1) {
+      return false;
+    }
+    const halves = s.split('::');
+    if (halves.length > 2) {
+      return false;
+    }
+    const compressed = halves.length === 2;
+    const ipv4Re = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+    function countGroups(seg) {
+      if (seg === '') {
+        return 0;
+      }
+      const g = seg.split(':');
+      let n = 0;
+      for (let i = 0; i < g.length; i++) {
+        const piece = g[i];
+        if (/^[0-9a-fA-F]{1,4}$/.test(piece)) {
+          n += 1;
+        } else if (i === g.length - 1 && ipv4Re.test(piece)) {
+          n += 2;
+        } else {
+          return -1;
+        }
+      }
+      return n;
+    }
+    const head = countGroups(halves[0]);
+    if (head < 0) {
+      return false;
+    }
+    if (!compressed) {
+      return head === 8;
+    }
+    const tail = countGroups(halves[1]);
+    if (tail < 0) {
+      return false;
+    }
+    return head + tail <= 7;
+  }
+
+  // detectIocKind: Tek IoC sınıflandırıcı (detectIoc ile aynı kurallar).
   function detectIocKind(raw) {
     const s = String(raw || '').trim();
     if (!s) {
       return 'unknown';
     }
     if (/^https?:\/\//i.test(s)) {
-      return 'url';
+      try {
+        // eslint-disable-next-line no-new
+        new URL(s);
+        return 'url';
+      } catch (_) {
+        return 'unknown';
+      }
     }
     const ipv4Re = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
     if (ipv4Re.test(s)) {
+      return 'ip';
+    }
+    if (isIpv6(s)) {
       return 'ip';
     }
     if (/^[a-fA-F0-9]{32}$/.test(s) || /^[a-fA-F0-9]{40}$/.test(s) || /^[a-fA-F0-9]{64}$/.test(s)) {
       return 'file';
     }
     const domainRe = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,63}$/;
-    if (domainRe.test(s) && !/\s/.test(s)) {
+    if (domainRe.test(s) && !/\s/.test(s) && s.length <= 253) {
       return 'domain';
     }
     return 'unknown';
@@ -362,6 +422,7 @@
     findUrlsInText: findUrlsInText,
     findFileHashesInText: findFileHashesInText,
     shortenHash: shortenHash,
+    isIpv6: isIpv6,
     detectIocKind: detectIocKind,
     abuseScoreToRiskTier: abuseScoreToRiskTier,
     payloadToBadgeRisk: payloadToBadgeRisk,

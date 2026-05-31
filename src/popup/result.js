@@ -195,7 +195,7 @@
   }
 
   // renderResultChart: Motor dağılımı ve özet metrikleri.
-  function renderResultChart(stats, threatLevel) {
+  function renderResultChart(stats) {
     const totals = engineTotals(stats);
     if (!resultChart || !resultChartBar) {
       return false;
@@ -399,7 +399,7 @@
     const isIp = isIpScanPayload(payload);
     syncAbuseCardVisibility(payload);
     syncVtReanalyzeButton(payload);
-    const hasVt = renderResultChart(payload.stats, payload.threatLevel);
+    const hasVt = renderResultChart(payload.stats);
     const hasAbuseData = isIp && !!payload.abuseipdb;
 
     if (!resultThreatDashboard) {
@@ -907,7 +907,9 @@
     }
     collapseScanInput();
     resultCard.setAttribute('data-level', payload.threatLevel || 'neutral');
-    resultKind.textContent = (payload.iocKind || '').toUpperCase();
+    if (resultKind) {
+      resultKind.textContent = (payload.iocKind || '').toUpperCase();
+    }
     renderHeroFromPayload(payload);
     renderThreatDashboard(payload);
     if (resultEngineBlock && resultEngineSummary && resultEngineList) {

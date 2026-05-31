@@ -382,11 +382,6 @@ html[data-theme="light"] .result-chart-stat {
   background: rgba(255, 255, 255, 0.8);
 }
 
-html[data-theme="light"] .stat {
-  background: rgba(243, 248, 253, 0.88);
-  border-color: rgba(15, 23, 42, 0.12);
-}
-
 html[data-theme="light"] .recent-item {
   background: rgba(239, 246, 252, 0.82);
   border-color: rgba(15, 23, 42, 0.14);

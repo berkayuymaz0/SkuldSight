@@ -28,6 +28,7 @@
   const MAX_BADGES = 120;
   const DOMAIN_TEXT_RE = /\b(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}\b/gi;
   const IPV4_OCTET = '(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)';
+  const IPV4_FULL_RE = new RegExp('^(?:' + IPV4_OCTET + ')(?:\\.(?:' + IPV4_OCTET + ')){3}$');
   const COMBINED_IP_RE = new RegExp(
     '\\b' +
       IPV4_OCTET +
@@ -47,6 +48,7 @@
   let domainScanDebounceTimer = null;
   let contentTheme = 'dark';
   let contentIocBadgesEnabled = true;
+  let contentCopySummaryFields = null;
   let panelLastScanResult = null;
   const pendingMutationRoots = new Set();
 
@@ -82,12 +84,22 @@
   }
 
   chrome.storage.local.get(
-    ['vtUiLang', 'vtDomainBadgeBlacklist', 'vtPopupTheme', 'vtContentIocBadges'],
+    [
+      'vtUiLang',
+      'vtDomainBadgeBlacklist',
+      'vtPopupTheme',
+      'vtContentIocBadges',
+      'vtCopySummaryFields'
+    ],
     function (d) {
       syncContentLang(d.vtUiLang === 'tr');
       applyContentTheme(d.vtPopupTheme === 'light' ? 'light' : 'dark');
       blacklistRules = parseBlacklistRules(d.vtDomainBadgeBlacklist);
       contentIocBadgesEnabled = d.vtContentIocBadges !== false;
+      contentCopySummaryFields =
+        d.vtCopySummaryFields && typeof d.vtCopySummaryFields === 'object'
+          ? d.vtCopySummaryFields
+          : null;
       applyContentIocSettings();
     }
   );
@@ -109,6 +121,10 @@
     if (changes.vtContentIocBadges) {
       contentIocBadgesEnabled = changes.vtContentIocBadges.newValue !== false;
       applyContentIocSettings();
+    }
+    if (changes.vtCopySummaryFields) {
+      const next = changes.vtCopySummaryFields.newValue;
+      contentCopySummaryFields = next && typeof next === 'object' ? next : null;
     }
   });
 
@@ -179,9 +195,7 @@
   }
 
   function isIPv4(ip) {
-    return new RegExp(
-      '^(?:' + IPV4_OCTET + ')(?:\\.(?:' + IPV4_OCTET + ')){3}$'
-    ).test(ip);
+    return IPV4_FULL_RE.test(ip);
   }
 
   function isIPv6(ip) {
@@ -322,7 +336,7 @@
       paths.forEach(function (d, idx) {
         const el = document.createElementNS(ns, 'path');
         el.setAttribute('d', d);
-        if (idx < 4) {
+        if (idx === 0) {
           el.setAttribute('fill', 'currentColor');
           el.setAttribute('stroke', 'none');
         } else {
@@ -381,59 +395,33 @@
     });
   }
 
-  function createDomainBadge(hostname) {
-    badgeCount += 1;
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.setAttribute(DOMAIN_BTN_ATTR, '1');
-    btn.setAttribute(DOMAIN_VALUE_ATTR, hostname);
-    btn.title = ct('domainBadgeButtonTitle', { host: hostname });
-    btn.className = 'vt-domain-badge vt-badge-pending';
-    btn.appendChild(createBadgeIconSvg('domain'));
-    btn.setAttribute('data-vt-theme', contentTheme);
-    btn.addEventListener('click', onDomainBadgeClick, true);
-    return btn;
-  }
+  const BADGE_KIND_META = {
+    domain: { cls: 'vt-domain-badge', icon: 'domain', titleKey: 'domainBadgeButtonTitle', titleVar: 'host' },
+    ip: { cls: 'vt-ip-badge', icon: 'ip', titleKey: 'ipBadgeButtonTitle', titleVar: 'ip' },
+    url: { cls: 'vt-url-badge', icon: 'url', titleKey: 'urlBadgeButtonTitle', titleVar: 'url' },
+    file: { cls: 'vt-hash-badge', icon: 'file', titleKey: 'hashBadgeButtonTitle', titleVar: 'hash' }
+  };
 
-  function createIpBadge(ip) {
+  // createBadge: Tek IoC rozet fabrikası (tür meta tablosuyla).
+  function createBadge(kind, value) {
+    const meta = BADGE_KIND_META[kind];
+    const attrs = BADGE_ATTR_BY_KIND[kind];
+    if (!meta || !attrs) {
+      return null;
+    }
     badgeCount += 1;
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.setAttribute(IP_BTN_ATTR, '1');
-    btn.setAttribute(IP_VALUE_ATTR, ip);
-    btn.title = ct('ipBadgeButtonTitle', { ip: ip });
-    btn.className = 'vt-ip-badge vt-badge-pending';
+    btn.setAttribute(attrs.btn, '1');
+    btn.setAttribute(attrs.val, value);
+    btn.setAttribute('data-vt-kind', kind);
+    const titleVars = {};
+    titleVars[meta.titleVar] = value;
+    btn.title = ct(meta.titleKey, titleVars);
+    btn.className = meta.cls + ' vt-badge-pending';
     btn.setAttribute('data-vt-theme', contentTheme);
-    btn.appendChild(createBadgeIconSvg('ip'));
-    btn.addEventListener('click', onIpBadgeClick, true);
-    return btn;
-  }
-
-  function createUrlBadge(url) {
-    badgeCount += 1;
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.setAttribute(URL_BTN_ATTR, '1');
-    btn.setAttribute(URL_VALUE_ATTR, url);
-    btn.title = ct('urlBadgeButtonTitle', { url: url });
-    btn.className = 'vt-url-badge vt-badge-pending';
-    btn.setAttribute('data-vt-theme', contentTheme);
-    btn.appendChild(createBadgeIconSvg('url'));
-    btn.addEventListener('click', onUrlBadgeClick, true);
-    return btn;
-  }
-
-  function createHashBadge(hash) {
-    badgeCount += 1;
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.setAttribute(HASH_BTN_ATTR, '1');
-    btn.setAttribute(HASH_VALUE_ATTR, hash);
-    btn.title = ct('hashBadgeButtonTitle', { hash: hash });
-    btn.className = 'vt-hash-badge vt-badge-pending';
-    btn.setAttribute('data-vt-theme', contentTheme);
-    btn.appendChild(createBadgeIconSvg('file'));
-    btn.addEventListener('click', onHashBadgeClick, true);
+    btn.appendChild(createBadgeIconSvg(meta.icon));
+    btn.addEventListener('click', onBadgeClick, true);
     return btn;
   }
 

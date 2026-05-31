@@ -204,10 +204,6 @@ html::-webkit-scrollbar-thumb:hover {
   top: calc(-96px * var(--pixel-size));
 }
 
-.Character:hover .Character_spritesheet {
-  animation-duration: 0.45s;
-}
-
 .Character_spritesheet.is-paused {
   animation-play-state: paused;
 }
@@ -608,11 +604,6 @@ html::-webkit-scrollbar-thumb:hover {
   color: var(--soc-label);
 }
 
-.scan-input-surface-label,
-.scan-input-compact-label {
-  color: var(--soc-label);
-}
-
 .ioc-textarea,
 .input-surface-card:not(.is-compact) .ioc-textarea,
 .news-search,
@@ -623,7 +614,6 @@ html::-webkit-scrollbar-thumb:hover {
   box-shadow: var(--shadow-inset);
 }
 
-.ioc-textarea:focus,
 .news-search:focus,
 .usom-search:focus {
   border-color: var(--soc-inset-focus);

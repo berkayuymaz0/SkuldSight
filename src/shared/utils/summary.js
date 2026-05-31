@@ -232,10 +232,20 @@
     return key ? t(key) : kind || '';
   }
 
-  function buildSummaryLine(payload, translate) {
+  const SUMMARY_DETAIL_FIELD_KEY = {
+    detailAbuseScore: 'abuseScore',
+    detailAbuseReports: 'abuseReports'
+  };
+
+  function buildSummaryLine(payload, translate, enabledFields) {
     const t = typeof translate === 'function' ? translate : function (key) {
       return key;
     };
+    /* enabledFields verilirse yalnızca true alanlar yazılır; verilmezse tüm
+       alanlar (geriye dönük uyumlu davranış). */
+    function fieldOn(key) {
+      return !enabledFields || enabledFields[key] === true;
+    }
     const p = payload && typeof payload === 'object' ? payload : {};
     const s = p.stats || {};
     const kind = p.iocKind || '';
@@ -246,36 +256,40 @@
     }
     const lines = [];
 
-    lines.push(
-      t('summaryIoc', {
-        ioc: p.ioc || ''
-      })
-    );
+    if (fieldOn('ioc')) {
+      lines.push(
+        t('summaryIoc', {
+          ioc: p.ioc || ''
+        })
+      );
+    }
     const kindLabel = localizedIocKind(kind, t);
-    if (kindLabel) {
+    if (kindLabel && fieldOn('kind')) {
       lines.push(
         t('summaryType', {
           kind: kindLabel
         })
       );
     }
-    lines.push(
-      t('summaryVtDetections', {
-        mal: s.malicious || 0,
-        susp: s.suspicious || 0,
-        und: s.undetected || 0
-      })
-    );
+    if (fieldOn('vt')) {
+      lines.push(
+        t('summaryVtDetections', {
+          mal: s.malicious || 0,
+          susp: s.suspicious || 0,
+          und: s.undetected || 0
+        })
+      );
+    }
 
     const rep = formatReputationSummary(p.reputation);
-    if (rep !== '—') {
+    if (rep !== '—' && fieldOn('reputation')) {
       pushSummaryLine(lines, seen, t('summaryReputation', { rep: rep }), rep);
     }
 
     const tc = p.threatContext;
     const suggested =
       (tc && tc.suggestedLabel && String(tc.suggestedLabel).trim()) || '';
-    if (suggested) {
+    if (suggested && fieldOn('suggestedThreat')) {
       pushSummaryLine(
         lines,
         seen,
@@ -294,6 +308,10 @@
     }
     const detailOrder = SUMMARY_DETAIL_ORDER[kind] || [];
     detailOrder.forEach(function (id) {
+      const fieldKey = SUMMARY_DETAIL_FIELD_KEY[id];
+      if (fieldKey && !fieldOn(fieldKey)) {
+        return;
+      }
       const row = detailMap[id];
       if (!row) {
         return;
@@ -309,7 +327,7 @@
     });
 
     const hero = p.hero;
-    if (hero && Array.isArray(hero.tagChips) && hero.tagChips.length) {
+    if (hero && Array.isArray(hero.tagChips) && hero.tagChips.length && fieldOn('tags')) {
       const tags = hero.tagChips
         .map(function (c) {
           return c && c.value ? String(c.value).trim() : '';
@@ -338,7 +356,7 @@
       }
     }
 
-    if (tc && Array.isArray(tc.distinctLabels) && tc.distinctLabels.length) {
+    if (tc && Array.isArray(tc.distinctLabels) && tc.distinctLabels.length && fieldOn('distinctLabels')) {
       const labels = tc.distinctLabels
         .map(function (x) {
           if (!x) {
@@ -371,21 +389,25 @@
     }
 
     const mit = p.mitreTechniques;
-    if (mit && Array.isArray(mit.ids) && mit.ids.length > 0) {
+    if (mit && Array.isArray(mit.ids) && mit.ids.length > 0 && fieldOn('mitre')) {
       const ids = mit.ids.slice(0, 12).join(', ');
       pushSummaryLine(lines, seen, t('summaryMitre', { ids: ids }), ids);
     }
 
-    lines.push(
-      t('summaryTime', {
-        time: new Date().toISOString()
-      })
-    );
-    lines.push(
-      t('summaryReport', {
-        link: p.permalink ? String(p.permalink).trim() : '—'
-      })
-    );
+    if (fieldOn('time')) {
+      lines.push(
+        t('summaryTime', {
+          time: new Date().toISOString()
+        })
+      );
+    }
+    if (fieldOn('reportLink')) {
+      lines.push(
+        t('summaryReport', {
+          link: p.permalink ? String(p.permalink).trim() : '—'
+        })
+      );
+    }
 
     return lines.join('\n');
   }

@@ -39,33 +39,15 @@
   function clearDomainDecorations() {
     badgeCount = 0;
     inlineScanCache.clear();
-    document.querySelectorAll('[' + DOMAIN_BTN_ATTR + '="1"]').forEach(function (el) {
-      el.remove();
+    [DOMAIN_BTN_ATTR, IP_BTN_ATTR, URL_BTN_ATTR, HASH_BTN_ATTR].forEach(function (attr) {
+      document.querySelectorAll('[' + attr + '="1"]').forEach(function (el) {
+        el.remove();
+      });
     });
-    document.querySelectorAll('[' + IP_BTN_ATTR + '="1"]').forEach(function (el) {
-      el.remove();
-    });
-    document.querySelectorAll('[' + URL_BTN_ATTR + '="1"]').forEach(function (el) {
-      el.remove();
-    });
-    document.querySelectorAll('[' + HASH_BTN_ATTR + '="1"]').forEach(function (el) {
-      el.remove();
-    });
-    document.querySelectorAll('[' + DOMAIN_TOKEN_ATTR + '="1"]').forEach(function (el) {
-      const txt = document.createTextNode(el.textContent || '');
-      el.replaceWith(txt);
-    });
-    document.querySelectorAll('[' + IP_TOKEN_ATTR + '="1"]').forEach(function (el) {
-      const txt = document.createTextNode(el.textContent || '');
-      el.replaceWith(txt);
-    });
-    document.querySelectorAll('[' + URL_TOKEN_ATTR + '="1"]').forEach(function (el) {
-      const txt = document.createTextNode(el.textContent || '');
-      el.replaceWith(txt);
-    });
-    document.querySelectorAll('[' + HASH_TOKEN_ATTR + '="1"]').forEach(function (el) {
-      const txt = document.createTextNode(el.textContent || '');
-      el.replaceWith(txt);
+    [DOMAIN_TOKEN_ATTR, IP_TOKEN_ATTR, URL_TOKEN_ATTR, HASH_TOKEN_ATTR].forEach(function (attr) {
+      document.querySelectorAll('[' + attr + '="1"]').forEach(function (el) {
+        el.replaceWith(document.createTextNode(el.textContent || ''));
+      });
     });
     hideDomainPanel();
   }
@@ -124,19 +106,12 @@
       ioc: (res && res.ioc) || domain || '',
       iocKind: (res && res.iocKind) || 'domain'
     });
-    if (typeof VtSocUtils !== 'undefined' && VtSocUtils.buildSummaryLine) {
-      return VtSocUtils.buildSummaryLine(payload, ct);
-    }
-    const s = payload.stats || {};
-    return (
-      payload.ioc +
-      ' | mal ' +
-      (s.malicious || 0) +
-      ' susp ' +
-      (s.suspicious || 0) +
-      ' | ' +
-      (payload.permalink || '')
-    );
+    /* Kullanıcının "Kopya özeti alanları" ayarına uy (popup ile tutarlı);
+       ayar yoksa tüm alanlar yazılır. */
+    const cfg = contentCopySummaryFields;
+    const enabledFields =
+      cfg && typeof cfg === 'object' && cfg[payload.iocKind] ? cfg[payload.iocKind] : undefined;
+    return VtSocUtils.buildSummaryLine(payload, ct, enabledFields);
   }
 
   function panelHtmlHead(domain) {

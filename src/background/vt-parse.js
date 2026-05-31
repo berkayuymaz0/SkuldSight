@@ -7,17 +7,9 @@ function stripIpv6Brackets(s) {
   return s;
 }
 
-// isProbablyIpv6: Arka plan yardımcısı; gövde içinde kullanım ayrıntıları.
+// isProbablyIpv6: Paylaşılan strict IPv6 doğrulayıcısına yönlendirir.
 function isProbablyIpv6(s) {
-  const t = stripIpv6Brackets(s);
-  if (!/^[0-9a-fA-F:.]+$/.test(t) || t.indexOf(':') === -1) {
-    return false;
-  }
-  const parts = t.split(':');
-  if (parts.length < 2 || parts.length > 8) {
-    return false;
-  }
-  return true;
+  return utils.isIpv6(s);
 }
 
 // detectIoc: Tarama kuyruğu, geçmiş veya toplu özet depolama.
@@ -271,17 +263,6 @@ function urlToVtId(urlStr) {
   } catch (_) {
     return '';
   }
-}
-
-// shortenHash: Hero satırı için hash kısaltma.
-function shortenHash(hash, head, tail) {
-  const s = String(hash || '').trim();
-  const h = Number(head) > 0 ? Number(head) : 10;
-  const t = Number(tail) > 0 ? Number(tail) : 8;
-  if (s.length <= h + t + 3) {
-    return s;
-  }
-  return s.slice(0, h) + '…' + s.slice(-t);
 }
 
 // buildHeroSummary: IoC türüne göre scan kartı üst satırları.

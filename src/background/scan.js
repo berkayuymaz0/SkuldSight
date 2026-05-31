@@ -164,45 +164,47 @@ function enqueueJob(run) {
 
 // runWorker: Tarama kuyruğu, geçmiş veya toplu özet depolama.
 async function runWorker() {
-  while (jobQueue.length > 0) {
-    const job = jobQueue.shift();
-    jobInFlight = true;
-    try {
-      const result = await job.run();
-      job.resolve(result);
-    } catch (e) {
-      job.reject(e);
-    } finally {
-      jobInFlight = false;
+  try {
+    while (jobQueue.length > 0) {
+      const job = jobQueue.shift();
+      jobInFlight = true;
+      try {
+        const result = await job.run();
+        job.resolve(result);
+      } catch (e) {
+        job.reject(e);
+      } finally {
+        jobInFlight = false;
+      }
+    }
+  } finally {
+    workerRunning = false;
+    if (jobQueue.length > 0) {
+      workerRunning = true;
+      runWorker();
     }
   }
-  workerRunning = false;
-}
-
-// resolveScanFlagsForKind: Aktif preset + IoC türüne göre VT ek sorgu bayrakları.
-async function resolveScanFlagsForKind(kind) {
-  const data = await chrome.storage.local.get(['vtScanPreset', 'vtScanPresets']);
-  let presetId = data.vtScanPreset;
-  if (presetId !== 'quick' && presetId !== 'detailed' && presetId !== 'analyst') {
-    presetId = 'quick';
-  }
-  const map = utils.migrateScanPresetsStorage(data.vtScanPresets);
-  const profile = utils.resolvePresetForKind(map, presetId, kind);
-  return utils.presetToRuntimeFlags(profile);
 }
 
 // scanIoc: Tarama kuyruğu, geçmiş veya toplu özet depolama.
 async function scanIoc(detected, opts) {
   opts = opts || {};
   const skipExtras = !!opts.skipExtras;
-  const scanFlags = skipExtras
-    ? {
-        relPreview: false,
-        relSecondary: false,
-        engineBreakdown: false,
-        mitre: false
-      }
-    : await resolveScanFlagsForKind(detected.kind);
+  /* Preset profili türü başına tek kez okunur; IP taramasında hem VT hem Abuse
+     bayrakları aynı profilden türetilir (çift storage okuması önlenir). */
+  let presetProfile = null;
+  let scanFlags;
+  if (skipExtras) {
+    scanFlags = {
+      relPreview: false,
+      relSecondary: false,
+      engineBreakdown: false,
+      mitre: false
+    };
+  } else {
+    presetProfile = await loadScanPresetProfile(detected.kind);
+    scanFlags = utils.presetToRuntimeFlags(presetProfile);
+  }
   let data;
   let abuseEnrichment = null;
   switch (detected.kind) {
@@ -210,7 +212,7 @@ async function scanIoc(detected, opts) {
       if (opts.includeAbuse === false) {
         data = await fetchIp(detected.value);
       } else {
-        const abuseFlags = await resolveAbuseFlagsForIp();
+        const abuseFlags = await resolveAbuseFlagsForIp(presetProfile);
         const ipResults = await Promise.all([
           fetchIp(detected.value),
           enrichAbuseForIp(detected.value, { abuseFlags: abuseFlags })

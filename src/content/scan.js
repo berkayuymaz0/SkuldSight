@@ -93,11 +93,33 @@
     wakeServiceWorkerThen(function () {
       const cport = chrome.runtime.connect({ name: 'vt-single' });
       let handled = false;
+      let timeoutTimer = null;
+      function finishWithError(message) {
+        if (handled) {
+          return;
+        }
+        handled = true;
+        if (timeoutTimer !== null) {
+          window.clearTimeout(timeoutTimer);
+          timeoutTimer = null;
+        }
+        panelLastScanResult = null;
+        panel.innerHTML = panelHtmlError(label, message || ct('domainBadgeScanFailed'));
+        attachPanelHandlers(value);
+        positionPanelNear(anchorBtn);
+        try {
+          cport.disconnect();
+        } catch (_) {}
+      }
       cport.onMessage.addListener(function (msg) {
         if (!msg || msg.type !== 'SCAN_RESULT' || handled) {
           return;
         }
         handled = true;
+        if (timeoutTimer !== null) {
+          window.clearTimeout(timeoutTimer);
+          timeoutTimer = null;
+        }
         const res = msg.result;
         if (!res || !res.ok) {
           panelLastScanResult = null;
@@ -119,7 +141,11 @@
       });
       cport.onDisconnect.addListener(function () {
         void chrome.runtime.lastError;
+        finishWithError(ct('domainBadgeScanFailed'));
       });
+      timeoutTimer = window.setTimeout(function () {
+        finishWithError(ct('domainBadgeScanFailed'));
+      }, 45000);
       cport.postMessage({
         type: 'SCAN_SINGLE',
         payload: value,
@@ -129,48 +155,24 @@
     });
   }
 
-  function onDomainBadgeClick(ev) {
+  // onBadgeClick: Tüm IoC rozetleri için tek tıklama işleyicisi.
+  function onBadgeClick(ev) {
     ev.preventDefault();
     ev.stopPropagation();
     const btn = ev.currentTarget;
-    const domain = btn && btn.getAttribute(DOMAIN_VALUE_ATTR);
-    if (!domain) {
+    if (!btn) {
       return;
     }
-    showCachedOrScanPanel('domain', domain, btn);
-  }
-
-  function onIpBadgeClick(ev) {
-    ev.preventDefault();
-    ev.stopPropagation();
-    const btn = ev.currentTarget;
-    const ip = btn && btn.getAttribute(IP_VALUE_ATTR);
-    if (!ip) {
+    const kind = btn.getAttribute('data-vt-kind');
+    const attrs = BADGE_ATTR_BY_KIND[kind];
+    if (!attrs) {
       return;
     }
-    showCachedOrScanPanel('ip', ip, btn);
-  }
-
-  function onUrlBadgeClick(ev) {
-    ev.preventDefault();
-    ev.stopPropagation();
-    const btn = ev.currentTarget;
-    const url = btn && btn.getAttribute(URL_VALUE_ATTR);
-    if (!url) {
+    const value = btn.getAttribute(attrs.val);
+    if (!value) {
       return;
     }
-    showCachedOrScanPanel('url', url, btn);
-  }
-
-  function onHashBadgeClick(ev) {
-    ev.preventDefault();
-    ev.stopPropagation();
-    const btn = ev.currentTarget;
-    const hash = btn && btn.getAttribute(HASH_VALUE_ATTR);
-    if (!hash) {
-      return;
-    }
-    showCachedOrScanPanel('file', hash, btn);
+    showCachedOrScanPanel(kind, value, btn);
   }
 
   // Metin düğümünün rozetleme için uygun olup olmadığını (script/input vb. hariç) kontrol eder.
@@ -215,15 +217,7 @@
   }
 
   function overlapsRange(range, occupied) {
-    if (socUtils && socUtils.overlapsAny) {
-      return socUtils.overlapsAny(range, occupied);
-    }
-    for (let i = 0; i < occupied.length; i++) {
-      if (range.start < occupied[i].end && occupied[i].start < range.end) {
-        return true;
-      }
-    }
-    return false;
+    return socUtils.overlapsAny(range, occupied);
   }
 
   function collectIocRanges(original) {
@@ -283,18 +277,6 @@
   }
 
   function createBadgeForRange(r) {
-    if (r.kind === 'url') {
-      return createUrlBadge(r.value);
-    }
-    if (r.kind === 'ip') {
-      return createIpBadge(r.value);
-    }
-    if (r.kind === 'domain') {
-      return createDomainBadge(r.value);
-    }
-    if (r.kind === 'file') {
-      return createHashBadge(r.value);
-    }
-    return null;
+    return createBadge(r.kind, r.value);
   }
 

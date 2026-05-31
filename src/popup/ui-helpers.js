@@ -3,8 +3,6 @@
     return VT_I18N.t(key, vars);
   }
 
-  const defaultCopySummaryFields = utils.defaultCopySummaryFields;
-  const copySummaryFieldKeys = utils.copySummaryFieldKeys;
   const normalizeCopySummaryFields = utils.normalizeCopySummaryFields;
 
   function safeJoinValues(values, fallback) {
@@ -506,7 +504,9 @@
 
   // setLoading: Popup DOM veya kullanıcı etkileşimi ile ilgili.
   function setLoading(on) {
-    btnScan.disabled = on;
+    if (btnScan) {
+      btnScan.disabled = on;
+    }
     if (input) {
       input.setAttribute('aria-busy', on ? 'true' : 'false');
     }
@@ -522,6 +522,9 @@
 
   // hideError: Popup DOM veya kullanıcı etkileşimi ile ilgili.
   function hideError() {
+    if (!errorMsg) {
+      return;
+    }
     errorMsg.hidden = true;
     errorMsg.textContent = '';
   }
@@ -610,10 +613,14 @@
 
   // showError: Popup DOM veya kullanıcı etkileşimi ile ilgili.
   function showError(text) {
-    errorMsg.textContent = resolveErrorMessage(
-      typeof text === 'object' ? text : { error: text }
-    );
-    errorMsg.hidden = false;
-    resultWrap.hidden = true;
+    if (errorMsg) {
+      errorMsg.textContent = resolveErrorMessage(
+        typeof text === 'object' ? text : { error: text }
+      );
+      errorMsg.hidden = false;
+    }
+    if (resultWrap) {
+      resultWrap.hidden = true;
+    }
   }
 

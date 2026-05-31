@@ -24,12 +24,6 @@ button.vt-hash-badge {
     border-color 0.15s ease,
     box-shadow 0.15s ease,
     color 0.15s ease;
-}
-
-button.vt-domain-badge,
-button.vt-ip-badge,
-button.vt-url-badge,
-button.vt-hash-badge {
   color: var(--vt-badge-fg);
   background: linear-gradient(155deg, var(--vt-badge-bg-start) 0%, var(--vt-badge-bg-end) 100%);
   box-shadow:

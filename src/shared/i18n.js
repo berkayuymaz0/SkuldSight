@@ -297,6 +297,7 @@
       optHistorySub:
         'Recent lookups are stored only in this browser profile.',
       optClearHistory: 'Clear recent lookups',
+      optConfirmClearHistory: 'Clear recent lookups? This cannot be undone.',
       toastApiSaved: 'API key saved',
       toastTestOk: 'VirusTotal connection OK',
       toastTestFail: 'VirusTotal connection failed',
@@ -350,6 +351,7 @@
       optCopySummaryTemplateHint:
         'Select fields per IoC type. Only relevant options should be enabled.',
       optCopyMatrixField: 'Field',
+      optCopyPresetLabel: 'Preset',
       optCopySummaryTemplateSave: 'Save fields',
       optCopySummaryTemplateReset: 'Reset fields',
       optCopyPresetMinimal: 'Minimal',
@@ -375,6 +377,7 @@
       optCopyFieldReportLink: 'Report link',
       optSaveBlacklist: 'Save blacklist',
       optClearBatch: 'Clear batch history',
+      optConfirmClearBatch: 'Clear batch history? This cannot be undone.',
       toastBlacklistSaved: 'Blacklist saved',
       toastBatchCleared: 'Batch history cleared',
       optScanPresetsTitle: 'Scan presets',
@@ -804,6 +807,7 @@
       optHistorySub:
         'Son sorgular yalnızca bu tarayıcı profilinde saklanır.',
       optClearHistory: 'Son sorguları temizle',
+      optConfirmClearHistory: 'Son sorgular temizlensin mi? Bu işlem geri alınamaz.',
       toastApiSaved: 'API anahtarı kaydedildi',
       toastTestOk: 'VirusTotal bağlantısı tamam',
       toastTestFail: 'VirusTotal bağlantısı başarısız',
@@ -857,6 +861,7 @@
       optCopySummaryTemplateHint:
         'IoC türüne göre alanları seçin. Yalnız uygun seçenekleri açın.',
       optCopyMatrixField: 'Alan',
+      optCopyPresetLabel: 'Profil',
       optCopySummaryTemplateSave: 'Alanları kaydet',
       optCopySummaryTemplateReset: 'Alanları sıfırla',
       optCopyPresetMinimal: 'Minimal',
@@ -882,6 +887,7 @@
       optCopyFieldReportLink: 'Rapor bağlantısı',
       optSaveBlacklist: 'Kara listeyi kaydet',
       optClearBatch: 'Toplu tarama geçmişini temizle',
+      optConfirmClearBatch: 'Toplu tarama geçmişi temizlensin mi? Bu işlem geri alınamaz.',
       toastBlacklistSaved: 'Kara liste kaydedildi',
       toastBatchCleared: 'Toplu tarama geçmişi temizlendi',
       optScanPresetsTitle: 'Tarama şablonları',

@@ -69,18 +69,19 @@ See [`docs/SECURITY_HARDENING_CHECKLIST.md`](docs/SECURITY_HARDENING_CHECKLIST.m
 
 ## Changelog
 
-### [Unreleased] — 2026-05-31
+### [1.0.4] — 2026-05-31
 
 **Changed**
-- Project restructured into a professional layout (`src/{shared,background,popup,options,content}`, `styles/`, `assets/`, `docs/`) with no build step; see [Project structure](#project-structure).
-- Large monoliths split into logical modules (behavior preserved, verified byte-for-byte):
-  - `utils.js` → `src/shared/utils/{core,analytics,summary,presets,ioc}.js` (shared `VtSocUtils` namespace)
-  - `background.js` → `src/background/{config,settings-uimode,feeds,vt-client,vt-parse,abuse,scan,analytics,messaging}.js` orchestrated via `importScripts`
-  - `popup.js` / `options.js` / `content.js` → per-surface part files loaded in dependency order
-  - `popup.css` / `options.css` → `styles/{popup,options}/*.css` parts
+- Project layout under `src/`, `styles/`, `assets/`, and `docs/` with modular scripts and CSS (no build step); see [Project structure](#project-structure).
+- Unified IoC classification (IPv6, URL validation) across background and popup; consolidated content badges, copy-summary field gating, and CSS cleanup.
+- IP scans read scan preset once per request; news/USOM search debounced in the popup.
 
 **Fixed**
-- Side panel / popup opening after restructure: runtime `setPopup` / `sidePanel.setOptions` paths now point to `src/popup/popup.html` (was root-relative `popup.html`, causing `ERR_FILE_NOT_FOUND`).
+- Background: job-queue race on worker shutdown; Abuse threat shown as `unknown` when lookup fails (not `clean`); unknown message types and context-menu errors return `errorKey`/`errorVars`.
+- Content: IPv6 badge pre-filter; settings load race before first scan; inline scan timeout on port disconnect; IP badge SVG stroke; `characterData` mutations for SPAs.
+- Popup: combined VT+Abuse threat after recent IP enrich; USOM detail race on slow fetch; DOM null guards on core controls.
+- Options: i18n confirm dialogs; live preset matrix on checkbox changes; content panel copy respects “Copy summary fields”.
+- Side panel / popup paths point to `src/popup/popup.html` after restructure (`ERR_FILE_NOT_FOUND`).
 
 ### [1.0.3] — 2026-05-30
 

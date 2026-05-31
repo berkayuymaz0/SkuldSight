@@ -566,6 +566,7 @@
   NS.readCopySummaryFieldsFromForm = readCopySummaryFieldsFromForm;
   NS.applyCopySummaryPreset = applyCopySummaryPreset;
   NS.renderPresetInputs = renderPresetInputs;
+  NS.renderPresetMatrix = renderPresetMatrix;
   NS.resetScanPresetsToDefaults = resetScanPresetsToDefaults;
   NS.readPresetInputs = readPresetInputs;
   NS.dayKey = dayKey;

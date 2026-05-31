@@ -183,6 +183,11 @@
         if (key) {
           usomDetailCache[key] = res.item;
         }
+        /* Yavaş yanıt geldiğinde satır yeniden render edilmiş veya kapatılmış olabilir;
+           kopuk ya da artık açık olmayan node'u doldurma. */
+        if (!detailNode.isConnected || (key && expandedUsomKey !== key)) {
+          return;
+        }
         fillUsomItemDetail(detailNode, res.item);
       }
     );

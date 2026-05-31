@@ -124,16 +124,21 @@ async function getAbuseApiKey() {
   return stored.key || null;
 }
 
-// resolveAbuseFlagsForIp: Aktif scan preset → AbuseIPDB sorgu bayrakları (IP only).
-async function resolveAbuseFlagsForIp() {
+// loadScanPresetProfile: Aktif preset + IoC türü için profil (tek storage okuması).
+async function loadScanPresetProfile(kind) {
   const data = await chrome.storage.local.get(['vtScanPreset', 'vtScanPresets']);
   let presetId = data.vtScanPreset;
-  if (presetId !== 'detailed' && presetId !== 'analyst' && presetId !== 'quick') {
+  if (presetId !== 'quick' && presetId !== 'detailed' && presetId !== 'analyst') {
     presetId = 'quick';
   }
   const map = utils.migrateScanPresetsStorage(data.vtScanPresets);
-  const profile = utils.resolvePresetForKind(map, presetId, 'ip');
-  return utils.presetToAbuseFlags(profile);
+  return utils.resolvePresetForKind(map, presetId, kind);
+}
+
+// resolveAbuseFlagsForIp: Aktif scan preset → AbuseIPDB sorgu bayrakları (IP only).
+async function resolveAbuseFlagsForIp(profile) {
+  const prof = profile || (await loadScanPresetProfile('ip'));
+  return utils.presetToAbuseFlags(prof);
 }
 
 // runAbuseLookup: AbuseIPDB check; isteğe bağlı reports (sayfa 1, 100 kayıt).
@@ -281,7 +286,7 @@ function mergeAbuseIntoIpPayload(payload, abuse) {
     payload.threatLevel = combineIpThreatLevel(vtLevel, abuse.score);
     payload.details = (payload.details || []).concat(buildAbuseDetailRows(abuse));
   } else {
-    payload.threatLevelAbuse = 'clean';
+    payload.threatLevelAbuse = 'unknown';
   }
 }
 

@@ -43,7 +43,7 @@
 
   function textNodeMayContainIoc(text) {
     const s = String(text || '');
-    return /https?:\/\/|hxxps?:\/\/|hxxp:\/\/|\b(?:\d{1,3}\.){3}\d{1,3}\b|(?:[a-z0-9-]+\.)+[a-z]{2,63}\b|[a-fA-F0-9]{32,64}/i.test(
+    return /https?:\/\/|hxxps?:\/\/|hxxp:\/\/|\b(?:\d{1,3}\.){3}\d{1,3}\b|(?:[a-z0-9-]+\.)+[a-z]{2,63}\b|[a-fA-F0-9]{32,64}|(?:[A-Fa-f0-9]{1,4}:){2,}|::[A-Fa-f0-9]/i.test(
       s
     );
   }
@@ -128,19 +128,50 @@
   }
 
   // DOM’a eklenen düğümleri izleyerek yeniden rozet taraması için kökleri kuyruğa alır.
+  // Bizim eklediğimiz rozet/sarmalayıcı düğümleri için mutasyonları yok say (gereksiz yeniden tarama döngüsünü azaltır).
+  function isOwnVtDecoration(node) {
+    if (!node || node.nodeType !== Node.ELEMENT_NODE || !node.hasAttribute) {
+      return false;
+    }
+    return (
+      node.hasAttribute(DOMAIN_TOKEN_ATTR) ||
+      node.hasAttribute(IP_TOKEN_ATTR) ||
+      node.hasAttribute(URL_TOKEN_ATTR) ||
+      node.hasAttribute(HASH_TOKEN_ATTR) ||
+      node.hasAttribute(DOMAIN_BTN_ATTR) ||
+      node.hasAttribute(IP_BTN_ATTR) ||
+      node.hasAttribute(URL_BTN_ATTR) ||
+      node.hasAttribute(HASH_BTN_ATTR)
+    );
+  }
+
   function onMutationForDomains(mutations) {
     let dirty = false;
     for (let i = 0; i < mutations.length; i++) {
       const m = mutations[i];
+      if (m.type === 'characterData') {
+        const parent = m.target && m.target.parentElement;
+        if (parent) {
+          pendingMutationRoots.add(parent);
+          dirty = true;
+        }
+        continue;
+      }
       if (m.type !== 'childList' || !m.addedNodes || m.addedNodes.length === 0) {
         continue;
       }
       for (let j = 0; j < m.addedNodes.length; j++) {
         const node = m.addedNodes[j];
         if (node.nodeType === Node.ELEMENT_NODE) {
+          if (isOwnVtDecoration(node)) {
+            continue;
+          }
           pendingMutationRoots.add(node);
           dirty = true;
         } else if (node.nodeType === Node.TEXT_NODE && node.parentElement) {
+          if (isOwnVtDecoration(node.parentElement)) {
+            continue;
+          }
           pendingMutationRoots.add(node.parentElement);
           dirty = true;
         }
@@ -166,7 +197,8 @@
     observer = new MutationObserver(onMutationForDomains);
     observer.observe(document.documentElement || document.body, {
       childList: true,
-      subtree: true
+      subtree: true,
+      characterData: true
     });
   }
 
@@ -205,4 +237,6 @@
     true
   );
 
-  applyContentIocSettings();
+  /* Başlangıç taraması, ayarlar yüklendikten sonra detect.js'teki storage.get
+     callback'inden tetiklenir; burada senkron çalıştırmak varsayılan ayarlarla
+     gereksiz tam tarama yapardı (race). */

@@ -4,6 +4,7 @@
  * Lightweight subset of utils.js for content scripts (IOC detection, badge risk, copy summary).
  */
 (function (global) {
+  const U = (global.VtSocUtils = global.VtSocUtils || {});
   function normalizeIocInput(raw) {
     let s = String(raw || '').trim();
     if (!s) {
@@ -518,12 +519,12 @@
     return 'clean';
   }
 
-  global.VtSocUtils = {
+  Object.assign(U, {
     buildSummaryLine: buildSummaryLine,
     payloadToBadgeRisk: payloadToBadgeRisk,
     findUrlsInText: findUrlsInText,
     findFileHashesInText: findFileHashesInText,
     overlapsAny: overlapsAny,
     shortenHash: shortenHash
-  };
+  });
 })(typeof globalThis !== 'undefined' ? globalThis : this);

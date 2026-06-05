@@ -90,6 +90,9 @@ See [`docs/SECURITY_HARDENING_CHECKLIST.md`](docs/SECURITY_HARDENING_CHECKLIST.m
 
 **Fixed**
 - Popup API status check (`TEST_VT_CONNECTION`) works again after sender-context hardening.
+- Content script `VtSocUtils` merge preserves IP/hash detection helpers after Phase 2 module load order change.
+- Content badge bootstrap runs after all content modules load; settings fetch retries on cold service worker start.
+- Scheduled DOM scans are cancelled when inline badges are disabled via settings.
 
 ### [1.0.5] — 2026-06-05
 

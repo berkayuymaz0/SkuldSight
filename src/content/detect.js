@@ -1,6 +1,8 @@
 'use strict';
 
-  const socUtils = typeof window !== 'undefined' ? window.VtSocUtils : null;
+  function getSocUtils() {
+    return typeof window !== 'undefined' ? window.VtSocUtils : null;
+  }
   const DOMAIN_BTN_ATTR = 'data-vt-domain-badge';
   const DOMAIN_VALUE_ATTR = 'data-vt-domain-value';
   const DOMAIN_TOKEN_ATTR = 'data-vt-domain-token';
@@ -94,12 +96,22 @@
       data.vtCopySummaryFields && typeof data.vtCopySummaryFields === 'object'
         ? data.vtCopySummaryFields
         : null;
-    applyContentIocSettings();
+    if (typeof applyContentIocSettings === 'function') {
+      applyContentIocSettings();
+    }
   }
 
-  function loadContentSettings() {
+  function loadContentSettings(retryCount) {
+    retryCount = retryCount || 0;
     chrome.runtime.sendMessage({ type: 'GET_CONTENT_SETTINGS' }, function (res) {
       if (chrome.runtime.lastError || !res || !res.ok) {
+        if (retryCount < 2) {
+          window.setTimeout(function () {
+            loadContentSettings(retryCount + 1);
+          }, 120);
+          return;
+        }
+        applyContentSettings({});
         return;
       }
       applyContentSettings(res.settings);
@@ -112,8 +124,6 @@
     }
     applyContentSettings(msg.settings);
   });
-
-  loadContentSettings();
 
   // Kara liste metnini satırlara bölüp yorumları atarak küçük harf kural dizisi üretir.
   function parseBlacklistRules(raw) {
@@ -192,8 +202,9 @@
   }
 
   function isSupportedPublicIP(ip) {
-    if (socUtils && typeof socUtils.isPublicRoutableIp === 'function') {
-      return socUtils.isPublicRoutableIp(ip);
+    const utils = getSocUtils();
+    if (utils && typeof utils.isPublicRoutableIp === 'function') {
+      return utils.isPublicRoutableIp(ip);
     }
     return false;
   }
@@ -293,9 +304,12 @@
       return;
     }
     const risk =
-      socUtils && socUtils.payloadToBadgeRisk
-        ? socUtils.payloadToBadgeRisk(payload)
-        : payload.threatLevel || 'clean';
+      (function () {
+        const utils = getSocUtils();
+        return utils && utils.payloadToBadgeRisk
+          ? utils.payloadToBadgeRisk(payload)
+          : payload.threatLevel || 'clean';
+      })();
     btn.setAttribute('data-vt-risk', risk);
     btn.classList.remove('vt-badge-pending');
     if (btn.classList.contains('vt-ip-badge')) {

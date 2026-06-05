@@ -214,10 +214,12 @@
   }
 
   function overlapsRange(range, occupied) {
-    return socUtils.overlapsAny(range, occupied);
+    const utils = getSocUtils();
+    return utils && utils.overlapsAny ? utils.overlapsAny(range, occupied) : false;
   }
 
   function collectIocRanges(original) {
+    const utils = getSocUtils();
     const occupied = [];
     const ranges = [];
 
@@ -229,8 +231,8 @@
       ranges.push(r);
     }
 
-    if (socUtils && socUtils.findUrlsInText) {
-      socUtils.findUrlsInText(original).forEach(function (u) {
+    if (utils && utils.findUrlsInText) {
+      utils.findUrlsInText(original).forEach(function (u) {
         addRange({ start: u.start, end: u.end, value: u.value, kind: 'url' });
       });
     }
@@ -261,8 +263,8 @@
       addRange({ start: start, end: end, value: domain, kind: 'domain', display: full });
     }
 
-    if (socUtils && socUtils.findFileHashesInText) {
-      socUtils.findFileHashesInText(original).forEach(function (h) {
+    if (utils && utils.findFileHashesInText) {
+      utils.findFileHashesInText(original).forEach(function (h) {
         addRange({ start: h.start, end: h.end, value: h.value, kind: 'file' });
       });
     }

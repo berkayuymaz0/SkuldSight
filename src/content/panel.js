@@ -2,8 +2,11 @@
 
   function panelDisplayLabel(iocKind, value) {
     const v = String(value || '');
-    if (iocKind === 'file' && socUtils && socUtils.shortenHash) {
-      return socUtils.shortenHash(v);
+    if (iocKind === 'file') {
+      const utils = getSocUtils();
+      if (utils && utils.shortenHash) {
+        return utils.shortenHash(v);
+      }
     }
     if (iocKind === 'url' && v.length > 56) {
       return v.slice(0, 48) + '…' + v.slice(-8);
@@ -54,7 +57,9 @@
 
   // Debounce zamanlayıcısını ve MutationObserver’ı durdurarak DOM izlemeyi kapatır.
   function stopDomainObserver() {
-    if (domainScanDebounceTimer !== null) {
+    if (typeof cancelScheduledDomainScan === 'function') {
+      cancelScheduledDomainScan();
+    } else if (domainScanDebounceTimer !== null) {
       window.clearTimeout(domainScanDebounceTimer);
       domainScanDebounceTimer = null;
     }

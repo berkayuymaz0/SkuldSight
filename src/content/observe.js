@@ -259,6 +259,6 @@
     true
   );
 
-  /* Başlangıç taraması, ayarlar yüklendikten sonra detect.js'teki storage.get
-     callback'inden tetiklenir; burada senkron çalıştırmak varsayılan ayarlarla
-     gereksiz tam tarama yapardı (race). */
+  /* Başlangıç taraması, tüm content modülleri yüklendikten sonra tetiklenir. */
+  applyContentSettings({});
+  loadContentSettings();

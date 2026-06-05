@@ -62,15 +62,34 @@ async function clearStoredKey(keyName, savedAtName) {
   await chrome.storage.local.set({ [keyName]: '', [savedAtName]: 0 });
 }
 
+/**
+ * Non-throwing presence check used by the scan router so VirusTotal can be
+ * treated as one optional provider among others (e.g. AbuseIPDB-only IP scans).
+ */
+async function hasVtApiKey() {
+  const stored = await getStoredKeyWithExpiry('vtApiKey', 'vtApiKeySavedAt');
+  if (stored.isExpired) {
+    await clearStoredKey('vtApiKey', 'vtApiKeySavedAt');
+    return false;
+  }
+  return !!stored.key;
+}
+
 // getApiKey: VirusTotal API hız sınırı veya HTTP çağrısı.
 async function getApiKey() {
   const stored = await getStoredKeyWithExpiry('vtApiKey', 'vtApiKeySavedAt');
   if (stored.isExpired) {
     await clearStoredKey('vtApiKey', 'vtApiKeySavedAt');
-    throw new Error('VirusTotal API key expired (14 days). Set a new key in options.');
+    const expiredErr = new Error('VirusTotal API key expired (14 days). Set a new key in options.');
+    expiredErr.errorKey = 'errorVtKeyExpired';
+    expiredErr.errorVars = {};
+    throw expiredErr;
   }
   if (!stored.key) {
-    throw new Error('Configure your VirusTotal API key in extension options.');
+    const missingErr = new Error('Configure your VirusTotal API key in extension options.');
+    missingErr.errorKey = 'errorVtNoKey';
+    missingErr.errorVars = {};
+    throw missingErr;
   }
   return stored.key;
 }

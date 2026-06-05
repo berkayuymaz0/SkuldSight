@@ -69,6 +69,16 @@ See [`docs/SECURITY_HARDENING_CHECKLIST.md`](docs/SECURITY_HARDENING_CHECKLIST.m
 
 ## Changelog
 
+### [1.0.5] — 2026-06-05
+
+**Changed**
+- IP lookups now query each provider (VirusTotal, AbuseIPDB) independently so one missing key or failure never blocks the other; new integrations can plug in the same way.
+- Scans work with **AbuseIPDB alone** (IP-only) or **VirusTotal alone**: an IP can be scored from AbuseIPDB even when no VirusTotal key is set, and a VirusTotal failure no longer drops an available AbuseIPDB result.
+- Result card shows an Abuse-only verdict when VirusTotal data is unavailable; the VT pill reads "No key" instead of a misleading "Clean".
+
+**Fixed**
+- Missing/expired VirusTotal key now returns i18n error keys (`errorVtNoKey`, `errorVtKeyExpired`); IPs with no configured provider return `errorNoProvider`.
+
 ### [1.0.4] — 2026-05-31
 
 **Changed**

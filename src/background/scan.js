@@ -214,6 +214,90 @@ async function runWorker() {
   }
 }
 
+/**
+ * IP lookups can be served by VirusTotal and/or AbuseIPDB. Each provider is
+ * queried independently so a missing key or a failure in one never blocks the
+ * other — and additional providers can be wired in the same way later.
+ */
+async function gatherIpProviderData(detected, opts, presetProfile) {
+  const includeAbuse = opts.includeAbuse !== false;
+  const vtAvailable = await hasVtApiKey();
+  const abuseAvailable = includeAbuse ? await hasAbuseApiKey() : false;
+
+  if (!vtAvailable && !abuseAvailable) {
+    const err = new Error(
+      includeAbuse
+        ? 'No API key configured. Add a VirusTotal or AbuseIPDB key in options.'
+        : 'Configure your VirusTotal API key in extension options.'
+    );
+    err.errorKey = includeAbuse ? 'errorNoProvider' : 'errorVtNoKey';
+    err.errorVars = {};
+    throw err;
+  }
+
+  const out = { vtData: null, vtError: null, abuseEnrichment: null };
+  const tasks = [];
+
+  if (vtAvailable) {
+    tasks.push(
+      fetchIp(detected.value).then(
+        function (d) {
+          out.vtData = d;
+        },
+        function (e) {
+          out.vtError = e;
+        }
+      )
+    );
+  }
+
+  if (abuseAvailable) {
+    const abuseFlags = await resolveAbuseFlagsForIp(presetProfile);
+    tasks.push(
+      enrichAbuseForIp(detected.value, { abuseFlags: abuseFlags }).then(function (a) {
+        out.abuseEnrichment = a;
+      })
+    );
+  } else if (includeAbuse) {
+    /* Key not set: keep the marker so the UI shows the "AbuseIPDB not set" hint. */
+    out.abuseEnrichment = { ok: false, error: 'not_configured' };
+  }
+
+  await Promise.all(tasks);
+
+  /* VT was the only available provider and it failed → surface its error
+     (preserves single-provider behavior). When AbuseIPDB is also available we
+     fall through to an Abuse-only payload instead of failing the whole scan. */
+  if (vtAvailable && !abuseAvailable && !out.vtData) {
+    throw out.vtError || new Error('VirusTotal request failed');
+  }
+
+  return out;
+}
+
+/** Build an IP scan payload from AbuseIPDB alone (VirusTotal unavailable or errored). */
+function buildAbuseOnlyIpPayload(detected, abuse, vtError) {
+  const payload = {
+    ok: true,
+    ioc: detected.value,
+    iocKind: 'ip',
+    stats: extractStats(null),
+    threatLevel: 'clean',
+    permalink: (abuse && abuse.abuseLink) || guiPermalink('ip', null, detected.value),
+    rawType: 'ip_address',
+    details: [],
+    vtUnavailable: true,
+    hero: { subtitle: '', iocDisplay: detected.value, tagChips: [], chips: [] }
+  };
+  if (vtError && vtError.errorKey) {
+    payload.vtErrorKey = String(vtError.errorKey);
+  }
+  mergeAbuseIntoIpPayload(payload, abuse);
+  /* No VT verdict to combine: the VT side is unknown, threatLevel stays Abuse-driven. */
+  payload.threatLevelVt = 'unknown';
+  return payload;
+}
+
 function enrichScanPayload(payload, detected, data, attrs, scanFlags) {
   const rep = extractReputation(attrs);
   if (rep !== null) {
@@ -277,16 +361,12 @@ async function scanIoc(detected, opts) {
   const fetchOpts = { skipPolling: skipExtras || opts.skipPolling === true };
   switch (detected.kind) {
     case 'ip': {
-      if (opts.includeAbuse === false) {
-        data = await fetchIp(detected.value);
-      } else {
-        const abuseFlags = await resolveAbuseFlagsForIp(presetProfile);
-        const ipResults = await Promise.all([
-          fetchIp(detected.value),
-          enrichAbuseForIp(detected.value, { abuseFlags: abuseFlags })
-        ]);
-        data = ipResults[0];
-        abuseEnrichment = ipResults[1];
+      const ipProviders = await gatherIpProviderData(detected, opts, presetProfile);
+      data = ipProviders.vtData;
+      abuseEnrichment = ipProviders.abuseEnrichment;
+      /* VirusTotal absent/failed but AbuseIPDB answered → return an Abuse-only card. */
+      if (!data) {
+        return buildAbuseOnlyIpPayload(detected, abuseEnrichment, ipProviders.vtError);
       }
       break;
     }

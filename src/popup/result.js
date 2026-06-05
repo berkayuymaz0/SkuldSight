@@ -177,11 +177,16 @@
     const combined = payload.threatLevel || 'neutral';
     resultVerdict.className = 'result-verdict is-' + combined;
     if (payload.iocKind === 'ip') {
-      const vtLevel = payload.threatLevelVt || vtThreatFromStats(payload.stats);
       const abuse = payload.abuseipdb;
       /* Kartlarda VT/Abuse ayrıntısı var; hero’da yalnızca birleşik seviye (taşma önlenir). */
       resultVerdict.textContent = threatLabelFromLevel(combined);
-      setProviderPill(resultVtPill, threatLabelFromLevel(vtLevel), vtLevel);
+      if (payload.vtUnavailable) {
+        /* VirusTotal anahtarı yok/başarısız: yanıltıcı "Temiz" yerine anahtar yok göster. */
+        setProviderPill(resultVtPill, t('vtNotConfiguredShort'), 'neutral');
+      } else {
+        const vtLevel = payload.threatLevelVt || vtThreatFromStats(payload.stats);
+        setProviderPill(resultVtPill, threatLabelFromLevel(vtLevel), vtLevel);
+      }
       if (abuse && abuse.ok === true && abuse.score != null && isFinite(abuse.score)) {
         setProviderPill(resultAbusePill, abuse.score + '/100', abuseTierClass(abuse.score));
       } else if (abuse && abuse.error === 'not_configured') {

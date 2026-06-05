@@ -124,6 +124,11 @@ async function getAbuseApiKey() {
   return stored.key || null;
 }
 
+/** Non-throwing presence check so the scan router can treat AbuseIPDB as an optional provider. */
+async function hasAbuseApiKey() {
+  return !!(await getAbuseApiKey());
+}
+
 // loadScanPresetProfile: Aktif preset + IoC türü için profil (tek storage okuması).
 async function loadScanPresetProfile(kind) {
   const data = await chrome.storage.local.get(['vtScanPreset', 'vtScanPresets']);

@@ -185,6 +185,9 @@
       optContentIocBadges: 'Enable on-page IOC detection (badges)',
       optContentIocBadgesHint:
         'Highlight URLs, IPs, domains, and file hashes in page text with scan badges.',
+      optScanFullUrls: 'Send full URLs to VirusTotal (include query strings)',
+      optScanFullUrlsHint:
+        'Off by default: URL query and hash are stripped before external lookup to avoid leaking tokens.',
       panelAbuseScore: 'Abuse score',
       panelAbuseReports: 'Abuse reports',
       panelAbuseOpen: 'Open AbuseIPDB',
@@ -248,6 +251,7 @@
       errorBatchTooManyLines: 'Batch is limited to {max} lines.',
       errorBatchLineTooLong: 'Each batch line must be at most {max} characters.',
       errorBatchFileTooLarge: 'Import file must be at most 1 MB.',
+      errorContentScanRateLimit: 'Too many page scans. Wait a minute or use the popup.',
       domainBadgeButtonTitle: 'PixelPaw SOC / VirusTotal: {host}',
       domainBadgeScanning: 'Scanning…',
       domainBadgeScanFailed: 'Scan failed',
@@ -723,6 +727,9 @@
       optContentIocBadges: 'Sayfa içi IoC tespitini etkinleştir (rozetler)',
       optContentIocBadgesHint:
         'Sayfa metnindeki URL, IP, alan adı ve dosya hash değerlerini tarama rozetiyle vurgular.',
+      optScanFullUrls: 'VirusTotal\'e tam URL gönder (sorgu dizgisi dahil)',
+      optScanFullUrlsHint:
+        'Varsayılan kapalı: URL sorgu ve hash değerleri dış servislere gitmeden temizlenir.',
       panelAbuseScore: 'Abuse skoru',
       panelAbuseReports: 'Abuse raporları',
       panelAbuseOpen: 'AbuseIPDB aç',
@@ -786,6 +793,8 @@
       errorBatchTooManyLines: 'Toplu tarama en fazla {max} satır olabilir.',
       errorBatchLineTooLong: 'Her satır en fazla {max} karakter olabilir.',
       errorBatchFileTooLarge: 'İçe aktarma dosyası en fazla 1 MB olabilir.',
+      errorContentScanRateLimit:
+        'Çok fazla sayfa içi tarama. Bir dakika bekleyin veya popup kullanın.',
       domainBadgeButtonTitle: 'PixelPaw SOC / VirusTotal: {host}',
       domainBadgeScanning: 'Taranıyor…',
       domainBadgeScanFailed: 'Tarama başarısız',

@@ -301,6 +301,24 @@
                   </span>
                 </span>
               </label>
+              <label class="pro-mode-toggle mini-toggle mini-toggle--has-hint" for="scan-full-urls">
+                <span class="setting-icon setting-icon--iocs" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10 13a5 5 0 0 1 0-7l1-1a5 5 0 0 1 7 7l-1 1" />
+                    <path d="M14 11a5 5 0 0 1 0 7l-1 1a5 5 0 0 1-7-7l1-1" />
+                  </svg>
+                </span>
+                <span class="pro-mode-copy">
+                  <span class="pro-mode-title" data-i18n="optScanFullUrls">Send full URLs to VirusTotal (include query strings)</span>
+                  <span class="field-hint" data-i18n="optScanFullUrlsHint">Off by default: URL query and hash are stripped before external lookup to avoid leaking tokens.</span>
+                </span>
+                <span class="switch" aria-hidden="true">
+                  <input type="checkbox" id="scan-full-urls" />
+                  <span class="switch-track">
+                    <span class="switch-thumb"></span>
+                  </span>
+                </span>
+              </label>
               <label class="pro-mode-toggle mini-toggle" for="batch-use-abuse">
                 <span class="setting-icon setting-icon--abuse" aria-hidden="true">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round">

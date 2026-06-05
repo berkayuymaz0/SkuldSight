@@ -23,7 +23,8 @@
     usomFetchedAt: 'vtUsomFetchedAt',
     popupActiveTab: 'vtPopupActiveTab',
     analytics: 'vtAnalytics',
-    uiMode: 'vtUiMode'
+    uiMode: 'vtUiMode',
+    scanFullUrls: 'vtScanFullUrls'
   };
 
   // API key saklama zaman damgasının TTL penceresini aşıp aşmadığını döndürür.

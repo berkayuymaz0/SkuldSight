@@ -355,6 +355,13 @@ function enrichScanPayload(payload, detected, data, attrs, scanFlags) {
 // scanIoc: Tarama kuyruğu, geçmiş veya toplu özet depolama.
 async function scanIoc(detected, opts) {
   opts = opts || {};
+  if (detected.kind === 'url') {
+    const data = await chrome.storage.local.get(['vtScanFullUrls']);
+    detected = {
+      kind: detected.kind,
+      value: utils.prepareUrlForExternalScan(detected.value, data.vtScanFullUrls === true)
+    };
+  }
   const skipExtras = !!opts.skipExtras;
   /* Preset profili türü başına tek kez okunur; IP taramasında hem VT hem Abuse
      bayrakları aynı profilden türetilir (çift storage okuması önlenir). */

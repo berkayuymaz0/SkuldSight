@@ -7,6 +7,15 @@ importScripts('../shared/utils/presets.js');
 importScripts('../shared/utils/ioc.js');
 importScripts('background-guards.js');
 
+function ensureTrustedStorageAccessLevel() {
+  try {
+    if (chrome.storage && chrome.storage.local && chrome.storage.local.setAccessLevel) {
+      chrome.storage.local.setAccessLevel({ accessLevel: 'TRUSTED_CONTEXTS' });
+    }
+  } catch (_) {}
+}
+ensureTrustedStorageAccessLevel();
+
 /**
  * Service worker: VirusTotal API v3 calls, client-side rate limiting, scan job queue,
  * context menu scans, and long-lived ports for popup/content batch and single scans.
@@ -15,6 +24,7 @@ importScripts('background-guards.js');
  * Load order is significant: config/state first, listeners (messaging) last.
  */
 importScripts('config.js');
+importScripts('fetch-retry.js');
 importScripts('settings-uimode.js');
 importScripts('feeds.js');
 importScripts('vt-client.js');

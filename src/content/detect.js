@@ -26,6 +26,7 @@
     file: HASH_TOKEN_ATTR
   };
   const MAX_BADGES = 120;
+  const MAX_TEXT_NODES_PER_FLUSH = 400;
   const DOMAIN_TEXT_RE = /\b(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}\b/gi;
   const IPV4_OCTET = '(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)';
   const IPV4_FULL_RE = new RegExp('^(?:' + IPV4_OCTET + ')(?:\\.(?:' + IPV4_OCTET + ')){3}$');
@@ -83,50 +84,36 @@
     return key;
   }
 
-  chrome.storage.local.get(
-    [
-      'vtUiLang',
-      'vtDomainBadgeBlacklist',
-      'vtPopupTheme',
-      'vtContentIocBadges',
-      'vtCopySummaryFields'
-    ],
-    function (d) {
-      syncContentLang(d.vtUiLang === 'tr');
-      applyContentTheme(d.vtPopupTheme === 'light' ? 'light' : 'dark');
-      blacklistRules = parseBlacklistRules(d.vtDomainBadgeBlacklist);
-      contentIocBadgesEnabled = d.vtContentIocBadges !== false;
-      contentCopySummaryFields =
-        d.vtCopySummaryFields && typeof d.vtCopySummaryFields === 'object'
-          ? d.vtCopySummaryFields
-          : null;
-      applyContentIocSettings();
-    }
-  );
+  function applyContentSettings(data) {
+    data = data || {};
+    syncContentLang(data.vtUiLang === 'tr');
+    applyContentTheme(data.vtPopupTheme === 'light' ? 'light' : 'dark');
+    blacklistRules = parseBlacklistRules(data.vtDomainBadgeBlacklist);
+    contentIocBadgesEnabled = data.vtContentIocBadges !== false;
+    contentCopySummaryFields =
+      data.vtCopySummaryFields && typeof data.vtCopySummaryFields === 'object'
+        ? data.vtCopySummaryFields
+        : null;
+    applyContentIocSettings();
+  }
 
-  chrome.storage.onChanged.addListener(function (changes, area) {
-    if (area !== 'local') {
+  function loadContentSettings() {
+    chrome.runtime.sendMessage({ type: 'GET_CONTENT_SETTINGS' }, function (res) {
+      if (chrome.runtime.lastError || !res || !res.ok) {
+        return;
+      }
+      applyContentSettings(res.settings);
+    });
+  }
+
+  chrome.runtime.onMessage.addListener(function (msg) {
+    if (!msg || msg.type !== 'CONTENT_SETTINGS_UPDATED') {
       return;
     }
-    if (changes.vtUiLang) {
-      syncContentLang(changes.vtUiLang.newValue === 'tr');
-    }
-    if (changes.vtPopupTheme) {
-      applyContentTheme(changes.vtPopupTheme.newValue === 'light' ? 'light' : 'dark');
-    }
-    if (changes.vtDomainBadgeBlacklist) {
-      blacklistRules = parseBlacklistRules(changes.vtDomainBadgeBlacklist.newValue);
-      applyContentIocSettings();
-    }
-    if (changes.vtContentIocBadges) {
-      contentIocBadgesEnabled = changes.vtContentIocBadges.newValue !== false;
-      applyContentIocSettings();
-    }
-    if (changes.vtCopySummaryFields) {
-      const next = changes.vtCopySummaryFields.newValue;
-      contentCopySummaryFields = next && typeof next === 'object' ? next : null;
-    }
+    applyContentSettings(msg.settings);
   });
+
+  loadContentSettings();
 
   // Kara liste metnini satırlara bölüp yorumları atarak küçük harf kural dizisi üretir.
   function parseBlacklistRules(raw) {
@@ -204,65 +191,15 @@
     );
   }
 
-  function isPublicIPv4(ip) {
-    const parts = ip.split('.').map(Number);
-    if (parts.length !== 4 || parts.some(Number.isNaN)) {
-      return false;
-    }
-    const a = parts[0];
-    const b = parts[1];
-    if (a === 10 || a === 127 || a === 0) {
-      return false;
-    }
-    if (a === 169 && b === 254) {
-      return false;
-    }
-    if (a === 192 && b === 168) {
-      return false;
-    }
-    if (a === 172 && b >= 16 && b <= 31) {
-      return false;
-    }
-    if (a >= 224) {
-      return false;
-    }
-    return true;
-  }
-
-  function isPublicIPv6(ip) {
-    const lower = ip.toLowerCase();
-    if (lower === '::' || lower === '::1') {
-      return false;
-    }
-    if (lower.startsWith('fc') || lower.startsWith('fd')) {
-      return false;
-    }
-    if (
-      lower.startsWith('fe8') ||
-      lower.startsWith('fe9') ||
-      lower.startsWith('fea') ||
-      lower.startsWith('feb')
-    ) {
-      return false;
-    }
-    if (lower.startsWith('ff')) {
-      return false;
-    }
-    return true;
-  }
-
   function isSupportedPublicIP(ip) {
-    if (isIPv4(ip)) {
-      return isPublicIPv4(ip);
-    }
-    if (isIPv6(ip)) {
-      return isPublicIPv6(ip);
+    if (socUtils && typeof socUtils.isPublicRoutableIp === 'function') {
+      return socUtils.isPublicRoutableIp(ip);
     }
     return false;
   }
 
   function inlineCacheKey(kind, value) {
-    return kind + ':' + String(value || '').toLowerCase();
+    return 'vt:scan:' + String(kind || '') + ':' + String(value || '').toLowerCase();
   }
 
   function createBadgeIconSvg(kind) {

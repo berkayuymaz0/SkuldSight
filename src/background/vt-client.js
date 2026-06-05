@@ -312,14 +312,16 @@ async function vtFetch(path, init, meta) {
       })
     );
     const text = await res.text();
-    if (res.status === 429 && attempt + 1 < VT_429_MAX_RETRIES) {
-      const retrySec = parseRetryAfterSec(res.headers.get('Retry-After'));
-      const waitMs = retrySec > 0
-        ? retrySec * 1000
-        : Math.min(
-            VT_429_BACKOFF_MAX_MS,
-            VT_429_BACKOFF_BASE_MS * Math.pow(2, attempt)
-          );
+    if (
+      (res.status === 429 || (res.status >= 500 && res.status <= 599)) &&
+      attempt + 1 < VT_429_MAX_RETRIES
+    ) {
+      const waitMs = computeRetryWaitMs(
+        attempt,
+        parseRetryAfterSec(res.headers.get('Retry-After')),
+        VT_429_BACKOFF_BASE_MS,
+        VT_429_BACKOFF_MAX_MS
+      );
       await sleep(waitMs);
       continue;
     }

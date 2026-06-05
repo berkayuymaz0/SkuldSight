@@ -165,6 +165,25 @@
     }
   }
 
+  // prepareUrlForExternalScan: VT gönderimi öncesi query/hash temizler (opt-in tam URL).
+  function prepareUrlForExternalScan(rawUrl, allowFullUrl) {
+    const normalized = normalizeUrlCandidate(rawUrl);
+    if (!normalized || !isLikelyHttpUrl(normalized)) {
+      return normalized;
+    }
+    if (allowFullUrl === true) {
+      return normalized;
+    }
+    try {
+      const parsed = new URL(normalized);
+      parsed.search = '';
+      parsed.hash = '';
+      return parsed.href;
+    } catch (_) {
+      return normalized;
+    }
+  }
+
   function isFileHashToken(raw) {
     const v = String(raw || '').trim().toLowerCase();
     if (/^[a-f0-9]{32}$/.test(v)) {
@@ -326,6 +345,29 @@
     return s;
   }
 
+  function ipv4FromMappedIpv6(raw) {
+    const s = normalizeIpv6ForCheck(raw);
+    const dotted = s.match(/^::ffff:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/i);
+    if (dotted) {
+      return dotted[1];
+    }
+    const hexPair = s.match(/^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i);
+    if (hexPair) {
+      const hi = parseInt(hexPair[1], 16);
+      const lo = parseInt(hexPair[2], 16);
+      if (!isFinite(hi) || !isFinite(lo)) {
+        return null;
+      }
+      return [
+        (hi >> 8) & 255,
+        hi & 255,
+        (lo >> 8) & 255,
+        lo & 255
+      ].join('.');
+    }
+    return null;
+  }
+
   function isPublicRoutableIpv4(ip) {
     const o = parseIpv4Octets(ip);
     if (!o) {
@@ -355,6 +397,9 @@
     if (a === 192 && b === 0 && (c === 0 || c === 2)) {
       return false;
     }
+    if (a === 192 && b === 88 && c === 99) {
+      return false;
+    }
     if (a === 198 && (b === 18 || b === 19)) {
       return false;
     }
@@ -375,7 +420,8 @@
     if (s === '::1' || s === '::') {
       return false;
     }
-    const head = s.split(':')[0] || '';
+    const parts = s.split(':');
+    const head = parts[0] || '';
     if (/^fe[89ab][0-9a-f]{0,2}$/i.test(head)) {
       return false;
     }
@@ -383,6 +429,15 @@
       return false;
     }
     if (/^ff[0-9a-f]{0,2}$/i.test(head)) {
+      return false;
+    }
+    if (head === '2001' && (parts[1] === '0' || parts[1] === '0000' || parts[1] === '')) {
+      return false;
+    }
+    if (head === '2002') {
+      return false;
+    }
+    if (head === '64' && parts[1] === 'ff9b') {
       return false;
     }
     if (s === '2001:db8' || s.indexOf('2001:db8:') === 0) {
@@ -398,6 +453,10 @@
       return false;
     }
     if (s.indexOf(':') !== -1) {
+      const mapped = ipv4FromMappedIpv6(s);
+      if (mapped) {
+        return isPublicRoutableIpv4(mapped);
+      }
       return isPublicRoutableIpv6(s);
     }
     return isPublicRoutableIpv4(s);
@@ -520,6 +579,7 @@
     classifyVtTagTone: classifyVtTagTone,
     mapTagsToHeroChips: mapTagsToHeroChips,
     normalizeUrlCandidate: normalizeUrlCandidate,
+    prepareUrlForExternalScan: prepareUrlForExternalScan,
     isLikelyHttpUrl: isLikelyHttpUrl,
     isFileHashToken: isFileHashToken,
     rangesOverlap: rangesOverlap,

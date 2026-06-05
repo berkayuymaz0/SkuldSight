@@ -64,6 +64,7 @@
       'vtNotifyNews',
       'vtNotifyContext',
       'vtContentIocBadges',
+      'vtScanFullUrls',
       'vtDomainBadgeBlacklist',
       'vtPopupTheme',
       'abuseipdbApiKey',
@@ -108,6 +109,9 @@
       dom.notifyContext.checked = data.vtNotifyContext !== false;
       if (dom.contentIocBadges) {
         dom.contentIocBadges.checked = data.vtContentIocBadges !== false;
+      }
+      if (dom.scanFullUrls) {
+        dom.scanFullUrls.checked = data.vtScanFullUrls === true;
       }
       if (dom.blacklist) {
         dom.blacklist.value = String(data.vtDomainBadgeBlacklist || '');
@@ -263,7 +267,8 @@
         vtNotifyQueued: !!dom.notifyQueued.checked,
         vtNotifyNews: !!dom.notifyNews.checked,
         vtNotifyContext: !!dom.notifyContext.checked,
-        vtContentIocBadges: dom.contentIocBadges ? !!dom.contentIocBadges.checked : true
+        vtContentIocBadges: dom.contentIocBadges ? !!dom.contentIocBadges.checked : true,
+        vtScanFullUrls: dom.scanFullUrls ? !!dom.scanFullUrls.checked : false
       },
       function () {
         setButtonBusy(submitBtn, false);

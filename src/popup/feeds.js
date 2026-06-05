@@ -448,9 +448,7 @@
         }
         const link = document.createElement('a');
         link.className = 'news-item-link';
-        link.href = normalizeExternalHttpUrl(item.link);
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
+        applySafeExternalLink(link, normalizeExternalHttpUrl(item.link));
         link.textContent = item.title || '';
         link.addEventListener('click', function () {
           markNewsItemRead(item);

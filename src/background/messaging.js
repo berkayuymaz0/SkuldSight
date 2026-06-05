@@ -118,7 +118,11 @@ chrome.contextMenus.onClicked.addListener(function (info) {
 });
 
 chrome.runtime.onConnect.addListener(function (port) {
-  if (!port || !guards.isKnownPortName(port.name) || !guards.isTrustedRuntimeSender(port.sender)) {
+  if (
+    !port ||
+    !guards.isKnownPortName(port.name) ||
+    !guards.canConnectPort(port.name, port.sender)
+  ) {
     try {
       port.disconnect();
     } catch (_) {}
@@ -139,7 +143,38 @@ chrome.runtime.onConnect.addListener(function (port) {
         } catch (_) {}
         return;
       }
-      const src = msg.source === 'content' ? 'content' : 'popup';
+      const fromContent = msg.source === 'content';
+      if (fromContent && !guards.isTrustedContentSender(port.sender)) {
+        try {
+          port.postMessage({
+            type: 'SCAN_RESULT',
+            result: {
+              ok: false,
+              error: 'unauthorized_sender',
+              errorKey: 'errorInvalidScanMessage'
+            }
+          });
+        } catch (_) {}
+        return;
+      }
+      if (fromContent) {
+        const tabId = port.sender && port.sender.tab ? port.sender.tab.id : 0;
+        const rateCheck = guards.checkContentScanRateLimit(tabId);
+        if (!rateCheck.ok) {
+          try {
+            port.postMessage({
+              type: 'SCAN_RESULT',
+              result: {
+                ok: false,
+                error: 'content_scan_rate_limit',
+                errorKey: rateCheck.errorKey || 'errorContentScanRateLimit'
+              }
+            });
+          } catch (_) {}
+          return;
+        }
+      }
+      const src = fromContent ? 'content' : 'popup';
       handleScanInput(msg.payload || '', src, {
         stripNoise: !!msg.stripNoise
       })
@@ -269,6 +304,21 @@ function respondAsync(sendResponse, promise, fallbackMessage, errorFactory) {
 }
 
 const backgroundMessageHandlers = {
+  GET_CONTENT_SETTINGS: function (_message, sendResponse) {
+    chrome.storage.local.get(
+      [
+        'vtUiLang',
+        'vtDomainBadgeBlacklist',
+        'vtPopupTheme',
+        'vtContentIocBadges',
+        'vtCopySummaryFields'
+      ],
+      function (data) {
+        sendResponse({ ok: true, settings: data || {} });
+      }
+    );
+    return true;
+  },
   GET_NEWS: function (_message, sendResponse) {
     return respondAsync(sendResponse, getNewsPayload(false), 'Failed to load news');
   },
@@ -416,10 +466,57 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
   if (!message || !message.type) {
     return;
   }
+  if (!guards.isMessageAllowedForSender(message.type, sender)) {
+    sendResponse({ ok: false, error: 'unauthorized_message' });
+    return false;
+  }
   const handler = backgroundMessageHandlers[message.type];
   if (!handler) {
     sendResponse({ ok: false, error: 'unknown_message_type' });
     return false;
   }
   return handler(message, sendResponse);
+});
+
+const CONTENT_SETTINGS_KEYS = [
+  'vtUiLang',
+  'vtDomainBadgeBlacklist',
+  'vtPopupTheme',
+  'vtContentIocBadges',
+  'vtCopySummaryFields'
+];
+
+function broadcastContentSettings(changes) {
+  if (!changes || typeof changes !== 'object') {
+    return;
+  }
+  const relevant = CONTENT_SETTINGS_KEYS.some(function (key) {
+    return Object.prototype.hasOwnProperty.call(changes, key);
+  });
+  if (!relevant) {
+    return;
+  }
+  chrome.storage.local.get(CONTENT_SETTINGS_KEYS, function (data) {
+    chrome.tabs.query({ url: ['https://*/*'] }, function (tabs) {
+      const list = Array.isArray(tabs) ? tabs : [];
+      for (let i = 0; i < list.length; i++) {
+        const tab = list[i];
+        if (!tab || tab.id == null) {
+          continue;
+        }
+        try {
+          chrome.tabs.sendMessage(tab.id, {
+            type: 'CONTENT_SETTINGS_UPDATED',
+            settings: data || {}
+          });
+        } catch (_) {}
+      }
+    });
+  });
+}
+
+chrome.storage.onChanged.addListener(function (changes, area) {
+  if (area === 'local') {
+    broadcastContentSettings(changes);
+  }
 });

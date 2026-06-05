@@ -80,19 +80,30 @@ function classifyAbuseHttpError(status) {
   return 'errorAbuseGeneric';
 }
 
-// fetchAbuseJson: AbuseIPDB REST yanıtını ayrıştırır (429’da bir kez yeniden dener).
-async function fetchAbuseJson(url, apiKey, attempt) {
-  const tryNo = attempt || 0;
+// fetchAbuseJson: AbuseIPDB REST yanıtını ayrıştırır (429/5xx’de yeniden dener).
+async function fetchAbuseJson(url, apiKey) {
   const headers = { Accept: 'application/json' };
   const key = String(apiKey || '').trim();
   if (key) {
     headers.Key = key;
   }
-  const response = await fetch(url.toString(), {
-    method: 'GET',
-    headers: headers
-  });
-  const rawText = await response.text();
+  const fetched = await fetchWithRetry(
+    async function () {
+      const response = await fetch(url.toString(), {
+        method: 'GET',
+        headers: headers
+      });
+      const rawText = await response.text();
+      return { response: response, text: rawText };
+    },
+    {
+      maxAttempts: ABUSE_MAX_FETCH_ATTEMPTS,
+      backoffBaseMs: ABUSE_RETRY_WAIT_MS,
+      backoffMaxMs: ABUSE_RETRY_WAIT_MS * 4
+    }
+  );
+  const response = fetched.response;
+  const rawText = fetched.text;
   let payload = null;
   try {
     payload = rawText ? JSON.parse(rawText) : null;
@@ -101,10 +112,6 @@ async function fetchAbuseJson(url, apiKey, attempt) {
     err.abuseStatus = response.status;
     err.errorKey = 'errorAbuseGeneric';
     throw err;
-  }
-  if (response.status === 429 && tryNo + 1 < ABUSE_MAX_FETCH_ATTEMPTS) {
-    await sleep(ABUSE_RETRY_WAIT_MS);
-    return fetchAbuseJson(url, apiKey, tryNo + 1);
   }
   if (!response.ok) {
     const detail =

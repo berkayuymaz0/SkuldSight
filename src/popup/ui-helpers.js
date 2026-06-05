@@ -111,6 +111,16 @@
     parent.appendChild(frag);
   }
 
+  // applySafeExternalLink: target=_blank linklerde rel noopener noreferrer garanti eder.
+  function applySafeExternalLink(anchor, href) {
+    if (!anchor) {
+      return;
+    }
+    anchor.href = href || '#';
+    anchor.target = '_blank';
+    anchor.rel = 'noopener noreferrer';
+  }
+
   // applyPresetMap: Depodaki preset haritasını (v1/v2) belleğe yükler.
   function applyPresetMap(rawMap) {
     scanPresets = utils.migrateScanPresetsStorage(rawMap);

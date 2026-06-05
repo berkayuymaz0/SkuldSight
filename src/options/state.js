@@ -40,6 +40,7 @@
     notifyNews: document.getElementById('notify-news'),
     notifyContext: document.getElementById('notify-context'),
     contentIocBadges: document.getElementById('content-ioc-badges'),
+    scanFullUrls: document.getElementById('scan-full-urls'),
     blacklist: document.getElementById('domain-badge-blacklist'),
     btnClearHistory: document.getElementById('btn-clear-history'),
     btnClearBatch: document.getElementById('btn-clear-batch'),

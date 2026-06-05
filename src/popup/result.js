@@ -987,9 +987,7 @@
         foot.className = 'result-abuse-foot';
         const link = document.createElement('a');
         link.className = 'result-abuse-link';
-        link.href = href;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
+        applySafeExternalLink(link, href);
         link.textContent = t('abuseOpenReport');
         foot.appendChild(link);
         resultAbuseBlock.appendChild(foot);

@@ -59,6 +59,9 @@
     const walker = document.createTreeWalker(base, NodeFilter.SHOW_TEXT);
     const nodes = [];
     while (walker.nextNode()) {
+      if (nodes.length >= MAX_TEXT_NODES_PER_FLUSH) {
+        break;
+      }
       const n = walker.currentNode;
       if (shouldSkipTextNode(n)) {
         continue;
@@ -116,15 +119,37 @@
     }
   }
 
+  let domainScanIdleId = null;
+
+  function cancelScheduledDomainScan() {
+    if (domainScanDebounceTimer !== null) {
+      window.clearTimeout(domainScanDebounceTimer);
+      domainScanDebounceTimer = null;
+    }
+    if (domainScanIdleId !== null && typeof cancelIdleCallback === 'function') {
+      cancelIdleCallback(domainScanIdleId);
+      domainScanIdleId = null;
+    }
+  }
+
   // Alan adı taramasını kısa gecikmeyle tek seferde birleştirerek (debounce) zamanlar.
   function scheduleDomainScan() {
     if (!contentIocBadgesEnabled || isCurrentPageBlacklisted()) {
       return;
     }
-    if (domainScanDebounceTimer !== null) {
-      window.clearTimeout(domainScanDebounceTimer);
+    cancelScheduledDomainScan();
+    const run = function () {
+      domainScanDebounceTimer = null;
+      domainScanIdleId = null;
+      flushPendingDomainScan();
+    };
+    if (typeof requestIdleCallback === 'function') {
+      domainScanIdleId = window.requestIdleCallback(run, {
+        timeout: DOMAIN_SCAN_DEBOUNCE_MS + 50
+      });
+      return;
     }
-    domainScanDebounceTimer = window.setTimeout(flushPendingDomainScan, DOMAIN_SCAN_DEBOUNCE_MS);
+    domainScanDebounceTimer = window.setTimeout(run, DOMAIN_SCAN_DEBOUNCE_MS);
   }
 
   // DOM’a eklenen düğümleri izleyerek yeniden rozet taraması için kökleri kuyruğa alır.
@@ -188,10 +213,7 @@
       return;
     }
     pendingMutationRoots.clear();
-    if (domainScanDebounceTimer !== null) {
-      window.clearTimeout(domainScanDebounceTimer);
-      domainScanDebounceTimer = null;
-    }
+    cancelScheduledDomainScan();
     const docRoot = document.body || document.documentElement;
     processVisibleTextIocs(docRoot);
     observer = new MutationObserver(onMutationForDomains);

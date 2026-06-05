@@ -79,6 +79,17 @@ See [`docs/SECURITY_HARDENING_CHECKLIST.md`](docs/SECURITY_HARDENING_CHECKLIST.m
 - Extension CSP tightened (`img-src`, `form-action`, `frame-src`, `frame-ancestors`).
 - VirusTotal and AbuseIPDB outbound links validated with URL parsing and host allowlists.
 - RSS/USOM feed data normalized and size-limited before storage; popup import capped at 1 MB / 250 lines.
+- `chrome.storage.local` restricted to trusted extension contexts (`setAccessLevel`); content scripts load settings via background messaging.
+- Sender context matrix limits message types by origin (popup/options vs content); content scans rate-limited per tab.
+- URL query/hash stripped before VirusTotal scans by default; full-URL scan is opt-in in Options.
+- IANA special-use IPv6 ranges added to the private/reserved IP guard (IPv4-mapped, Teredo, 6to4, NAT64).
+- Central `fetchWithRetry` helper adds 5xx/429 retry with `Retry-After` and exponential backoff for VT and AbuseIPDB.
+- DOM badge scan capped per flush and scheduled with `requestIdleCallback`; inline cache keys namespaced as `vt:scan:{kind}:{value}`.
+- External links in popup use a shared `applySafeExternalLink` helper (`noopener noreferrer`).
+- Minimum Chrome version set to 102 (required for storage access level).
+
+**Fixed**
+- Popup API status check (`TEST_VT_CONNECTION`) works again after sender-context hardening.
 
 ### [1.0.5] — 2026-06-05
 

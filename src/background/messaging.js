@@ -127,6 +127,16 @@ chrome.runtime.onConnect.addListener(function (port) {
   if (port.name === 'vt-single') {
     port.onMessage.addListener(function (msg) {
       if (!guards.isValidSingleScanMessage(msg)) {
+        try {
+          port.postMessage({
+            type: 'SCAN_RESULT',
+            result: {
+              ok: false,
+              error: 'invalid_message',
+              errorKey: 'errorInvalidScanMessage'
+            }
+          });
+        } catch (_) {}
         return;
       }
       const src = msg.source === 'content' ? 'content' : 'popup';
@@ -156,15 +166,29 @@ chrome.runtime.onConnect.addListener(function (port) {
   }
   port.onMessage.addListener(function (msg) {
     if (!guards.isValidBatchScanMessage(msg)) {
+      try {
+        port.postMessage({
+          type: 'BATCH_ERROR',
+          error: 'invalid_message',
+          errorKey: 'errorInvalidScanMessage'
+        });
+      } catch (_) {}
       return;
     }
     const lines = Array.isArray(msg.lines) ? msg.lines : [];
     const strip = !!msg.stripNoise;
     const includeAbuse = msg.includeAbuse !== false;
     const total = lines.length;
+    let disconnected = false;
+    port.onDisconnect.addListener(function () {
+      disconnected = true;
+    });
     (async function () {
       const analyticsEntries = [];
       for (let i = 0; i < lines.length; i++) {
+        if (disconnected) {
+          break;
+        }
         const line = lines[i];
         const prepared = strip ? normalizeIocInput(line) : String(line || '').trim();
         if (!prepared) {
@@ -208,6 +232,9 @@ chrome.runtime.onConnect.addListener(function (port) {
             error: err && err.message ? err.message : 'Scan failed'
           });
         }
+      }
+      if (disconnected) {
+        return;
       }
       await recordScanStatsMany(analyticsEntries);
       port.postMessage({ type: 'BATCH_DONE' });

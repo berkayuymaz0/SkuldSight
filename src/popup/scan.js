@@ -1,4 +1,29 @@
   // checkKeyAndHint: Popup DOM veya kullanıcı etkileşimi ile ilgili.
+  const MAX_BATCH_FILE_BYTES = 1024 * 1024;
+  const MAX_BATCH_LINES = 250;
+  const MAX_BATCH_LINE_LEN = 4096;
+
+  function validateBatchLines(lines) {
+    const list = Array.isArray(lines) ? lines : [];
+    if (list.length > MAX_BATCH_LINES) {
+      return {
+        ok: false,
+        errorKey: 'errorBatchTooManyLines',
+        errorVars: { max: MAX_BATCH_LINES }
+      };
+    }
+    for (let i = 0; i < list.length; i++) {
+      if (String(list[i] || '').length > MAX_BATCH_LINE_LEN) {
+        return {
+          ok: false,
+          errorKey: 'errorBatchLineTooLong',
+          errorVars: { max: MAX_BATCH_LINE_LEN }
+        };
+      }
+    }
+    return { ok: true };
+  }
+
   function checkKeyAndHint() {
     chrome.storage.local.get(['vtApiKey', 'vtApiKeySavedAt'], function (data) {
       if (chrome.runtime.lastError) {
@@ -798,6 +823,11 @@
       showError(t('errorEmptyIoc'));
       return;
     }
+    const limitCheck = validateBatchLines(lines);
+    if (!limitCheck.ok) {
+      showError(t(limitCheck.errorKey, limitCheck.errorVars));
+      return;
+    }
     scanSessionId += 1;
     const session = scanSessionId;
     if (lines.length === 1) {
@@ -1309,6 +1339,11 @@
       if (!f) {
         return;
       }
+      if (f.size > MAX_BATCH_FILE_BYTES) {
+        fileIocList.value = '';
+        showError(t('errorBatchFileTooLarge'));
+        return;
+      }
       const reader = new FileReader();
       reader.onload = function () {
         const lines = parseFileToIocLines(reader.result);
@@ -1316,6 +1351,11 @@
         fileIocList.value = '';
         if (lines.length === 0) {
           showError(t('fileImportEmpty'));
+          return;
+        }
+        const limitCheck = validateBatchLines(lines);
+        if (!limitCheck.ok) {
+          showError(t(limitCheck.errorKey, limitCheck.errorVars));
           return;
         }
         input.value = lines.join('\n');

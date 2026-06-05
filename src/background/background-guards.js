@@ -2,6 +2,18 @@
 
 (function (global) {
   const ALLOWED_PORTS = new Set(['vt-single', 'vt-batch']);
+  const MAX_MESSAGE_TYPE_LEN = 64;
+  const MAX_SCAN_PAYLOAD_LEN = 4096;
+  const MAX_BATCH_LINES = 250;
+  const MAX_BATCH_LINE_LEN = 4096;
+
+  function isPlainObject(value) {
+    if (!value || typeof value !== 'object') {
+      return false;
+    }
+    const proto = Object.getPrototypeOf(value);
+    return proto === Object.prototype || proto === null;
+  }
 
   function isTrustedRuntimeSender(sender) {
     if (!sender || typeof sender !== 'object') {
@@ -18,11 +30,44 @@
   }
 
   function isValidSingleScanMessage(msg) {
-    return !!msg && msg.type === 'SCAN_SINGLE';
+    if (!isPlainObject(msg)) {
+      return false;
+    }
+    if (typeof msg.type !== 'string' || msg.type.length > MAX_MESSAGE_TYPE_LEN) {
+      return false;
+    }
+    if (msg.type !== 'SCAN_SINGLE') {
+      return false;
+    }
+    const payload = msg.payload != null ? String(msg.payload) : '';
+    if (payload.length > MAX_SCAN_PAYLOAD_LEN) {
+      return false;
+    }
+    return true;
   }
 
   function isValidBatchScanMessage(msg) {
-    return !!msg && msg.type === 'SCAN_BATCH' && Array.isArray(msg.lines);
+    if (!isPlainObject(msg)) {
+      return false;
+    }
+    if (typeof msg.type !== 'string' || msg.type.length > MAX_MESSAGE_TYPE_LEN) {
+      return false;
+    }
+    if (msg.type !== 'SCAN_BATCH') {
+      return false;
+    }
+    if (!Array.isArray(msg.lines)) {
+      return false;
+    }
+    if (msg.lines.length > MAX_BATCH_LINES) {
+      return false;
+    }
+    for (let i = 0; i < msg.lines.length; i++) {
+      if (String(msg.lines[i] || '').length > MAX_BATCH_LINE_LEN) {
+        return false;
+      }
+    }
+    return true;
   }
 
   global.VtBackgroundGuards = {

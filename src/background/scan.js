@@ -1,5 +1,16 @@
 'use strict';
 
+function assertPublicRoutableIp(ip) {
+  if (!utils.isPublicRoutableIp(ip)) {
+    const err = new Error(
+      'Private or reserved IP addresses cannot be sent to external lookup services.'
+    );
+    err.errorKey = 'errorPrivateIp';
+    err.errorVars = { ip: String(ip || '') };
+    throw err;
+  }
+}
+
 async function fetchIp(ip) {
   return vtFetch(
     '/ip_addresses/' + encodeURIComponent(ip),
@@ -64,6 +75,9 @@ async function requestVtReanalysis(message) {
     err.errorKey = 'errorVtReanalyzeUnsupported';
     err.errorVars = {};
     throw err;
+  }
+  if (iocKind === 'ip') {
+    assertPublicRoutableIp(ioc);
   }
   const objectId = resolveVtObjectIdForReanalyze(iocKind, ioc, message && message.vtObjectId);
   if (!objectId) {
@@ -220,6 +234,7 @@ async function runWorker() {
  * other — and additional providers can be wired in the same way later.
  */
 async function gatherIpProviderData(detected, opts, presetProfile) {
+  assertPublicRoutableIp(detected.value);
   const includeAbuse = opts.includeAbuse !== false;
   const vtAvailable = await hasVtApiKey();
   const abuseAvailable = includeAbuse ? await hasAbuseApiKey() : false;

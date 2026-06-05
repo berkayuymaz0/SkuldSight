@@ -69,6 +69,17 @@ See [`docs/SECURITY_HARDENING_CHECKLIST.md`](docs/SECURITY_HARDENING_CHECKLIST.m
 
 ## Changelog
 
+### [1.0.6] — 2026-06-05
+
+**Security**
+- AbuseIPDB API key is sent via the `Key` HTTP header instead of the URL query string.
+- Background port/message validation tightened (payload size, batch line/count limits, plain-object checks).
+- Batch scans stop when the popup/side-panel port disconnects.
+- Private/reserved IP ranges are blocked before VirusTotal, AbuseIPDB, or VT reanalysis calls.
+- Extension CSP tightened (`img-src`, `form-action`, `frame-src`, `frame-ancestors`).
+- VirusTotal and AbuseIPDB outbound links validated with URL parsing and host allowlists.
+- RSS/USOM feed data normalized and size-limited before storage; popup import capped at 1 MB / 250 lines.
+
 ### [1.0.5] — 2026-06-05
 
 **Changed**

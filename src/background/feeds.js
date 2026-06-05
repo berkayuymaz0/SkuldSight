@@ -79,12 +79,27 @@ function extractAtomLink(block) {
 function rssItemPermalink(block) {
   const link = extractRssTag(block, 'link');
   if (link) {
-    return link;
+    return normalizeFeedLink(link);
   }
   const guid = extractRssTag(block, 'guid');
   if (guid && /^https?:\/\//i.test(guid)) {
-    return guid;
+    return normalizeFeedLink(guid);
   }
+  return '';
+}
+
+// normalizeFeedLink: RSS linklerini yalnızca http(s) olarak depolar.
+function normalizeFeedLink(rawLink) {
+  const href = String(rawLink || '').trim();
+  if (!href) {
+    return '';
+  }
+  try {
+    const parsed = new URL(href);
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      return parsed.href.slice(0, 1000);
+    }
+  } catch (_) {}
   return '';
 }
 
@@ -105,7 +120,7 @@ function parseFeedItems(xmlText, feedUrl) {
       }
       items.push({
         title: title.slice(0, 300),
-        link: link.slice(0, 1000),
+        link: link,
         pubDate: pubDate.slice(0, 120),
         source: source
       });
@@ -116,14 +131,14 @@ function parseFeedItems(xmlText, feedUrl) {
   for (let i = 0; i < entryBlocks.length && items.length < NEWS_MAX_ITEMS; i++) {
     const block = entryBlocks[i];
     const title = extractRssTag(block, 'title');
-    const link = extractAtomLink(block);
+    const link = normalizeFeedLink(extractAtomLink(block));
     const pubDate = extractRssTag(block, 'published') || extractRssTag(block, 'updated');
     if (!title || !link) {
       continue;
     }
     items.push({
       title: title.slice(0, 300),
-      link: link.slice(0, 1000),
+      link: link,
       pubDate: pubDate.slice(0, 120),
       source: source
     });
@@ -295,16 +310,23 @@ function parseUsomTags(raw) {
     .filter(Boolean);
 }
 
+const USOM_DESC_MAX_LEN = 50000;
+const USOM_SLUG_MAX_LEN = 120;
+const USOM_SLUG_RE = /^[a-zA-Z0-9._-]+$/;
+
 // normalizeUsomItem: USOM olay listesi veya detay isteği.
 function normalizeUsomItem(row) {
   if (!row || typeof row !== 'object') {
     return null;
   }
+  const rawSlug = row.slug ? String(row.slug).trim() : '';
+  const slug =
+    rawSlug && rawSlug.length <= USOM_SLUG_MAX_LEN && USOM_SLUG_RE.test(rawSlug) ? rawSlug : '';
   return {
     id: Number(row.id) || 0,
-    slug: row.slug ? String(row.slug).trim() : '',
+    slug: slug,
     title: row.title ? String(row.title).trim().slice(0, 400) : '',
-    desc: row.desc ? String(row.desc) : '',
+    desc: row.desc ? String(row.desc).slice(0, USOM_DESC_MAX_LEN) : '',
     date: row.date ? String(row.date).trim() : '',
     language: row.language ? String(row.language).trim() : '',
     active: row.active !== false,

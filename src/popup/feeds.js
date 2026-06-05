@@ -115,6 +115,49 @@
     return '#';
   }
 
+  // sanitizeVtPermalink: VirusTotal GUI bağlantılarını URL parse ile doğrular.
+  function sanitizeVtPermalink(rawUrl) {
+    const href = String(rawUrl || '').trim();
+    if (!href) {
+      return '#';
+    }
+    try {
+      const parsed = new URL(href);
+      if (parsed.protocol !== 'https:') {
+        return '#';
+      }
+      if (parsed.hostname !== 'www.virustotal.com') {
+        return '#';
+      }
+      return parsed.href;
+    } catch (_) {
+      return '#';
+    }
+  }
+
+  // sanitizeAbuseReportUrl: AbuseIPDB check bağlantılarını URL parse ile doğrular.
+  function sanitizeAbuseReportUrl(rawUrl) {
+    const href = String(rawUrl || '').trim();
+    if (!href) {
+      return '';
+    }
+    try {
+      const parsed = new URL(href);
+      if (parsed.protocol !== 'https:') {
+        return '';
+      }
+      if (parsed.hostname !== 'www.abuseipdb.com') {
+        return '';
+      }
+      if (!parsed.pathname.startsWith('/check/')) {
+        return '';
+      }
+      return parsed.href;
+    } catch (_) {
+      return '';
+    }
+  }
+
   // usomHtmlToPlainText: USOM olay listesi veya detay isteği.
   function usomHtmlToPlainText(rawHtml) {
     const parser = new DOMParser();

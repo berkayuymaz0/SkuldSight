@@ -213,13 +213,39 @@
     if (!abuse || abuse.ok !== true || !abuse.abuseLink) {
       return '';
     }
+    const href = sanitizeAbuseReportUrl(abuse.abuseLink);
+    if (!href) {
+      return '';
+    }
     return (
       '<a class="vt-domain-panel-link vt-panel-abuse-link" href="' +
-      escapePanelHtml(abuse.abuseLink) +
+      escapePanelHtml(href) +
       '" target="_blank" rel="noopener noreferrer">' +
       escapePanelHtml(ct('panelAbuseOpenShort')) +
       '</a>'
     );
+  }
+
+  function sanitizeAbuseReportUrl(rawUrl) {
+    const href = String(rawUrl || '').trim();
+    if (!href) {
+      return '';
+    }
+    try {
+      const parsed = new URL(href);
+      if (parsed.protocol !== 'https:') {
+        return '';
+      }
+      if (parsed.hostname !== 'www.abuseipdb.com') {
+        return '';
+      }
+      if (!parsed.pathname.startsWith('/check/')) {
+        return '';
+      }
+      return parsed.href;
+    } catch (_) {
+      return '';
+    }
   }
 
   function escapePanelHtml(value) {
@@ -231,11 +257,22 @@
   }
 
   function sanitizePermalink(url) {
-    const s = String(url || '').trim();
-    if (s.indexOf('https://www.virustotal.com/') === 0) {
-      return s;
+    const href = String(url || '').trim();
+    if (!href) {
+      return '#';
     }
-    return '#';
+    try {
+      const parsed = new URL(href);
+      if (parsed.protocol !== 'https:') {
+        return '#';
+      }
+      if (parsed.hostname !== 'www.virustotal.com') {
+        return '#';
+      }
+      return parsed.href;
+    } catch (_) {
+      return '#';
+    }
   }
 
   function inlineScanCacheSet(key, value) {

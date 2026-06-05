@@ -81,11 +81,16 @@ function classifyAbuseHttpError(status) {
 }
 
 // fetchAbuseJson: AbuseIPDB REST yanıtını ayrıştırır (429’da bir kez yeniden dener).
-async function fetchAbuseJson(url, attempt) {
+async function fetchAbuseJson(url, apiKey, attempt) {
   const tryNo = attempt || 0;
+  const headers = { Accept: 'application/json' };
+  const key = String(apiKey || '').trim();
+  if (key) {
+    headers.Key = key;
+  }
   const response = await fetch(url.toString(), {
     method: 'GET',
-    headers: { Accept: 'application/json' }
+    headers: headers
   });
   const rawText = await response.text();
   let payload = null;
@@ -99,7 +104,7 @@ async function fetchAbuseJson(url, attempt) {
   }
   if (response.status === 429 && tryNo + 1 < ABUSE_MAX_FETCH_ATTEMPTS) {
     await sleep(ABUSE_RETRY_WAIT_MS);
-    return fetchAbuseJson(url, tryNo + 1);
+    return fetchAbuseJson(url, apiKey, tryNo + 1);
   }
   if (!response.ok) {
     const detail =
@@ -151,8 +156,7 @@ async function runAbuseLookup(ip, apiKey, maxAgeInDays, overallDays, includeRepo
   const checkUrl = new URL('https://api.abuseipdb.com/api/v2/check');
   checkUrl.searchParams.set('ipAddress', ip);
   checkUrl.searchParams.set('maxAgeInDays', String(overallDays));
-  checkUrl.searchParams.set('key', apiKey);
-  const checkPayload = await fetchAbuseJson(checkUrl);
+  const checkPayload = await fetchAbuseJson(checkUrl, apiKey);
   const checkData = (checkPayload && checkPayload.data) || {};
   let categoryBreakdown = [];
   let windowReportTotal = 0;
@@ -166,8 +170,7 @@ async function runAbuseLookup(ip, apiKey, maxAgeInDays, overallDays, includeRepo
     reportsUrl.searchParams.set('maxAgeInDays', String(maxAgeInDays));
     reportsUrl.searchParams.set('perPage', String(perPage));
     reportsUrl.searchParams.set('page', '1');
-    reportsUrl.searchParams.set('key', apiKey);
-    const reportsPayload = await fetchAbuseJson(reportsUrl);
+    const reportsPayload = await fetchAbuseJson(reportsUrl, apiKey);
     const reportsData = (reportsPayload && reportsPayload.data) || {};
     const pageResults = Array.isArray(reportsData.results) ? reportsData.results : [];
     const summary = buildAbuseCategorySummary(pageResults, ABUSE_CATEGORIES);
@@ -230,6 +233,13 @@ async function enrichAbuseForIp(ip, opts) {
   const apiKey = await getAbuseApiKey();
   if (!apiKey) {
     return { ok: false, error: 'not_configured' };
+  }
+  if (!utils.isPublicRoutableIp(ip)) {
+    return {
+      ok: false,
+      error: 'Private or reserved IP addresses cannot be sent to external lookup services.',
+      errorKey: 'errorPrivateIp'
+    };
   }
   try {
     const flags = opts.abuseFlags || (await resolveAbuseFlagsForIp());
@@ -312,8 +322,7 @@ async function testAbuseApiConnection(overrideKey) {
     const url = new URL('https://api.abuseipdb.com/api/v2/check');
     url.searchParams.set('ipAddress', '1.1.1.1');
     url.searchParams.set('maxAgeInDays', '30');
-    url.searchParams.set('key', key);
-    await fetchAbuseJson(url);
+    await fetchAbuseJson(url, key);
     return { ok: true };
   } catch (e) {
     return {

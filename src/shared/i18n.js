@@ -242,6 +242,12 @@
       errorBatchDisconnected:
         'Batch scan stopped (connection lost). Try again or reduce batch size.',
       errorBatchFailed: 'Batch failed',
+      errorPrivateIp:
+        'Private or reserved IP addresses cannot be sent to external lookup services.',
+      errorInvalidScanMessage: 'Invalid scan request.',
+      errorBatchTooManyLines: 'Batch is limited to {max} lines.',
+      errorBatchLineTooLong: 'Each batch line must be at most {max} characters.',
+      errorBatchFileTooLarge: 'Import file must be at most 1 MB.',
       domainBadgeButtonTitle: 'PixelPaw SOC / VirusTotal: {host}',
       domainBadgeScanning: 'Scanning…',
       domainBadgeScanFailed: 'Scan failed',
@@ -774,6 +780,12 @@
       errorBatchDisconnected:
         'Toplu tarama kesildi (bağlantı koptu). Tekrar deneyin veya partiyi küçültün.',
       errorBatchFailed: 'Toplu tarama başarısız',
+      errorPrivateIp:
+        'Özel veya ayrılmış IP adresleri dış arama servislerine gönderilemez.',
+      errorInvalidScanMessage: 'Geçersiz tarama isteği.',
+      errorBatchTooManyLines: 'Toplu tarama en fazla {max} satır olabilir.',
+      errorBatchLineTooLong: 'Her satır en fazla {max} karakter olabilir.',
+      errorBatchFileTooLarge: 'İçe aktarma dosyası en fazla 1 MB olabilir.',
       domainBadgeButtonTitle: 'PixelPaw SOC / VirusTotal: {host}',
       domainBadgeScanning: 'Taranıyor…',
       domainBadgeScanFailed: 'Tarama başarısız',

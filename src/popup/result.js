@@ -981,16 +981,19 @@
     }
 
     if (abuse.abuseLink) {
-      const foot = document.createElement('div');
-      foot.className = 'result-abuse-foot';
-      const link = document.createElement('a');
-      link.className = 'result-abuse-link';
-      link.href = abuse.abuseLink;
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
-      link.textContent = t('abuseOpenReport');
-      foot.appendChild(link);
-      resultAbuseBlock.appendChild(foot);
+      const href = sanitizeAbuseReportUrl(abuse.abuseLink);
+      if (href) {
+        const foot = document.createElement('div');
+        foot.className = 'result-abuse-foot';
+        const link = document.createElement('a');
+        link.className = 'result-abuse-link';
+        link.href = href;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.textContent = t('abuseOpenReport');
+        foot.appendChild(link);
+        resultAbuseBlock.appendChild(foot);
+      }
     }
   }
 
@@ -1257,7 +1260,7 @@
         appendFragment(resultDetailsEl, detailRows);
       }
     }
-    resultLink.href = normalizeExternalHttpUrl(payload.permalink);
+    resultLink.href = sanitizeVtPermalink(payload.permalink);
 
     if (resultEngineDetails && resultEngineBlock) {
       resultEngineDetails.hidden = resultEngineBlock.hidden;

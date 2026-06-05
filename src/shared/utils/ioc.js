@@ -298,6 +298,111 @@
     return head + tail <= 7;
   }
 
+  function parseIpv4Octets(ip) {
+    const parts = String(ip || '').trim().split('.');
+    if (parts.length !== 4) {
+      return null;
+    }
+    const out = [];
+    for (let i = 0; i < 4; i++) {
+      const n = Number(parts[i]);
+      if (!Number.isInteger(n) || n < 0 || n > 255) {
+        return null;
+      }
+      out.push(n);
+    }
+    return out;
+  }
+
+  function normalizeIpv6ForCheck(raw) {
+    let s = String(raw || '').trim().toLowerCase();
+    if (s.startsWith('[') && s.endsWith(']')) {
+      s = s.slice(1, -1);
+    }
+    const pct = s.indexOf('%');
+    if (pct !== -1) {
+      s = s.slice(0, pct);
+    }
+    return s;
+  }
+
+  function isPublicRoutableIpv4(ip) {
+    const o = parseIpv4Octets(ip);
+    if (!o) {
+      return false;
+    }
+    const a = o[0];
+    const b = o[1];
+    const c = o[2];
+    if (a === 0 || a === 10 || a === 127) {
+      return false;
+    }
+    if (a === 100 && b >= 64 && b <= 127) {
+      return false;
+    }
+    if (a === 169 && b === 254) {
+      return false;
+    }
+    if (a === 172 && b >= 16 && b <= 31) {
+      return false;
+    }
+    if (a === 192 && b === 168) {
+      return false;
+    }
+    if (a >= 224) {
+      return false;
+    }
+    if (a === 192 && b === 0 && (c === 0 || c === 2)) {
+      return false;
+    }
+    if (a === 198 && (b === 18 || b === 19)) {
+      return false;
+    }
+    if (a === 198 && b === 51 && c === 100) {
+      return false;
+    }
+    if (a === 203 && b === 0 && c === 113) {
+      return false;
+    }
+    return true;
+  }
+
+  function isPublicRoutableIpv6(ip) {
+    const s = normalizeIpv6ForCheck(ip);
+    if (!s || !isIpv6(s)) {
+      return false;
+    }
+    if (s === '::1' || s === '::') {
+      return false;
+    }
+    const head = s.split(':')[0] || '';
+    if (/^fe[89ab][0-9a-f]{0,2}$/i.test(head)) {
+      return false;
+    }
+    if (/^f[cd][0-9a-f]{0,2}$/i.test(head)) {
+      return false;
+    }
+    if (/^ff[0-9a-f]{0,2}$/i.test(head)) {
+      return false;
+    }
+    if (s === '2001:db8' || s.indexOf('2001:db8:') === 0) {
+      return false;
+    }
+    return true;
+  }
+
+  // isPublicRoutableIp: RFC1918/reserved aralıkları dış API'lere gönderilmesin diye kontrol eder.
+  function isPublicRoutableIp(ip) {
+    const s = String(ip || '').trim();
+    if (!s) {
+      return false;
+    }
+    if (s.indexOf(':') !== -1) {
+      return isPublicRoutableIpv6(s);
+    }
+    return isPublicRoutableIpv4(s);
+  }
+
   // detectIocKind: Tek IoC sınıflandırıcı (detectIoc ile aynı kurallar).
   function detectIocKind(raw) {
     const s = String(raw || '').trim();
@@ -423,6 +528,7 @@
     findFileHashesInText: findFileHashesInText,
     shortenHash: shortenHash,
     isIpv6: isIpv6,
+    isPublicRoutableIp: isPublicRoutableIp,
     detectIocKind: detectIocKind,
     abuseScoreToRiskTier: abuseScoreToRiskTier,
     payloadToBadgeRisk: payloadToBadgeRisk,

@@ -1,2 +1,6 @@
 .DS_Store
+
+# Local AI agent context (not shared via git)
+AGENTS.md
 .cursor/
+docs/AGENT_CONTEXT.md

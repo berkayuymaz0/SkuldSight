@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "PixelPaw SOC",
-  "version": "1.0.6",
+  "name": "SkuldSight SOC",
+  "version": "1.1.0",
   "minimum_chrome_version": "102",
   "description": "Chrome MV3 extension for SOC analysts: scan IPs, domains, URLs & hashes via VirusTotal, with AbuseIPDB, batch scans & on-page IOC badges.",
   "action": {
@@ -12,7 +12,7 @@
       "48": "assets/icons/icon48.png",
       "128": "assets/icons/icon128.png"
     },
-    "default_title": "PixelPaw SOC"
+    "default_title": "SkuldSight SOC"
   },
   "icons": {
     "16": "assets/icons/icon16.png",

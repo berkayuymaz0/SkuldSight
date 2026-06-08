@@ -8,7 +8,7 @@
   const M = {
     en: {
       langName: 'English',
-      popupTitle: 'PixelPaw SOC',
+      popupTitle: 'SkuldSight SOC',
       popupTagline: 'Mascot-powered IoC lookout',
       openSettings: 'Open settings',
       iocLabel: 'IoCs (one per line)',
@@ -179,9 +179,9 @@
       optKpiAbuseSubCounts: '≥75: {high} · ≥50: {elevated}',
       optPresetAbbrAbuseScore:
         'Threat label: ≥75 malicious, ≥50 suspicious. Visual tiers: ≤24 low, ≤49 medium, ≤74 high, ≥75 critical.',
-      ipBadgeButtonTitle: 'PixelPaw SOC: {ip}',
-      urlBadgeButtonTitle: 'PixelPaw SOC / VirusTotal: {url}',
-      hashBadgeButtonTitle: 'PixelPaw SOC / VirusTotal: {hash}',
+      ipBadgeButtonTitle: 'SkuldSight SOC: {ip}',
+      urlBadgeButtonTitle: 'SkuldSight SOC / VirusTotal: {url}',
+      hashBadgeButtonTitle: 'SkuldSight SOC / VirusTotal: {hash}',
       optContentIocBadges: 'Enable on-page IOC detection (badges)',
       optContentIocBadgesHint:
         'Highlight URLs, IPs, domains, and file hashes in page text with scan badges.',
@@ -252,7 +252,7 @@
       errorBatchLineTooLong: 'Each batch line must be at most {max} characters.',
       errorBatchFileTooLarge: 'Import file must be at most 1 MB.',
       errorContentScanRateLimit: 'Too many page scans. Wait a minute or use the popup.',
-      domainBadgeButtonTitle: 'PixelPaw SOC / VirusTotal: {host}',
+      domainBadgeButtonTitle: 'SkuldSight SOC / VirusTotal: {host}',
       domainBadgeScanning: 'Scanning…',
       domainBadgeScanFailed: 'Scan failed',
       domainBadgeMalShort: 'Mal',
@@ -551,7 +551,7 @@
     },
     tr: {
       langName: 'Türkçe',
-      popupTitle: 'PixelPaw SOC',
+      popupTitle: 'SkuldSight SOC',
       popupTagline: 'Maskot destekli IoC nobeti',
       openSettings: 'Ayarları aç',
       iocLabel: 'IoC’ler (satır başına bir)',
@@ -721,9 +721,9 @@
       optKpiAbuseSubCounts: '≥75: {high} · ≥50: {elevated}',
       optPresetAbbrAbuseScore:
         'Tehdit etiketi: ≥75 zararlı, ≥50 şüpheli. Görsel katman: ≤24 düşük, ≤49 orta, ≤74 yüksek, ≥75 kritik.',
-      ipBadgeButtonTitle: 'PixelPaw SOC: {ip}',
-      urlBadgeButtonTitle: 'PixelPaw SOC / VirusTotal: {url}',
-      hashBadgeButtonTitle: 'PixelPaw SOC / VirusTotal: {hash}',
+      ipBadgeButtonTitle: 'SkuldSight SOC: {ip}',
+      urlBadgeButtonTitle: 'SkuldSight SOC / VirusTotal: {url}',
+      hashBadgeButtonTitle: 'SkuldSight SOC / VirusTotal: {hash}',
       optContentIocBadges: 'Sayfa içi IoC tespitini etkinleştir (rozetler)',
       optContentIocBadgesHint:
         'Sayfa metnindeki URL, IP, alan adı ve dosya hash değerlerini tarama rozetiyle vurgular.',
@@ -795,7 +795,7 @@
       errorBatchFileTooLarge: 'İçe aktarma dosyası en fazla 1 MB olabilir.',
       errorContentScanRateLimit:
         'Çok fazla sayfa içi tarama. Bir dakika bekleyin veya popup kullanın.',
-      domainBadgeButtonTitle: 'PixelPaw SOC / VirusTotal: {host}',
+      domainBadgeButtonTitle: 'SkuldSight SOC / VirusTotal: {host}',
       domainBadgeScanning: 'Taranıyor…',
       domainBadgeScanFailed: 'Tarama başarısız',
       domainBadgeMalShort: 'Zar',

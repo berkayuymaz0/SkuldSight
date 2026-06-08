@@ -1,4 +1,4 @@
-# PixelPaw SOC
+# SkuldSight SOC
 
 Chrome extension (Manifest V3) for IoC lookups via VirusTotal, optional AbuseIPDB enrichment for IPs, and local history/analytics. UI languages: English and Turkish.
 
@@ -68,6 +68,12 @@ Keys are stored in `chrome.storage.local` only (14-day TTL). Rotate API keys per
 See [`docs/SECURITY_HARDENING_CHECKLIST.md`](docs/SECURITY_HARDENING_CHECKLIST.md) before release.
 
 ## Changelog
+
+### [1.1.0] — 2026-06-08
+
+**Changed**
+- Rebranded from PixelPaw SOC to **SkuldSight SOC** (name, UI strings, notifications).
+- New extension logo/icons generated from the SkuldSight shield artwork.
 
 ### [1.0.6] — 2026-06-05
 

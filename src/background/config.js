@@ -1,7 +1,7 @@
 'use strict';
 
 const VT_API = 'https://www.virustotal.com/api/v3';
-const APP_NAME = 'PixelPaw SOC';
+const APP_NAME = 'SkuldSight SOC';
 const utils = globalThis.VtSocUtils;
 const guards = globalThis.VtBackgroundGuards;
 const SK = utils.STORAGE_KEYS;
@@ -61,7 +61,7 @@ const VT_429_BACKOFF_MAX_MS = 60000;
 
 // uniqueNotificationId: Her bildirim için benzersiz id (sabit id yeniden uyarmaz).
 function uniqueNotificationId(kind) {
-  return 'pixelpaw-' + String(kind || 'alert') + '-' + String(Date.now());
+  return 'skuldsight-' + String(kind || 'alert') + '-' + String(Date.now());
 }
 
 // showNotification: Temel extension bildirimi (benzersiz id, kısaltılmış mesaj).

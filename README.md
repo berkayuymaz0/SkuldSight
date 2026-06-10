@@ -18,7 +18,7 @@ Scan IPs, domains, URLs and file hashes via VirusTotal and AbuseIPDB, run batch 
   <img src="https://img.shields.io/badge/Add%20to%20Chrome-Install-34A853?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Add to Chrome" height="40" />
 </a>
 
-[Features](#-features) · [Screenshots](#-screenshots) · [Install](#-install) · [Configuration](#-configuration) · [Project structure](#-project-structure) · [Security](#-security)
+[Features](#-features) · [Install](#-install) · [Configuration](#-configuration) · [Project structure](#-project-structure) · [Security](#-security)
 
 </div>
 
@@ -42,43 +42,117 @@ Scan IPs, domains, URLs and file hashes via VirusTotal and AbuseIPDB, run batch 
 
 ## ✨ Features
 
-| Capability | What it does |
-|---|---|
-| 🔍 **Single scan** | Look up any IP, domain, URL, or file hash — reputation, engine detections, and network intel in one panel. |
-| 📦 **Batch scan** | Paste hundreds of indicators (one per line); rate-limit-aware queue resolves them live with malicious / suspicious / clean labels. |
-| 🏷️ **On-page badges** | Auto-detect IPs, domains, URLs, and hashes on HTTPS pages; hover any badge for an instant reputation summary. |
-| ⚙️ **Scan presets** | Quick / Detailed / Analyst depth control — tune VT pivots, threat labels, MITRE, and AbuseIPDB windows. |
-| 📊 **Analytics** | Local-only dashboard: totals, 14-day activity, threat distribution, and IoC-type breakdown. |
-| 🔄 **Reanalyze** | Trigger a fresh VirusTotal analysis straight from the result card. |
-| 🛡️ **AbuseIPDB enrichment** | Optional confidence score, report counts, and category breakdown for IP indicators. |
-| 🌐 **Bilingual UI** | Full English and Turkish interface. |
+### 🔍 Every IoC's verdict in seconds
 
----
+<table>
+<tr>
+<td width="55%">
 
-## 📸 Screenshots
+Look up any **IP, domain, URL, or file hash** from the popup or side panel and get the full picture in a single result card: reputation score, per-engine VirusTotal detections, and network intel (ASN, owner, country, last analysis).
 
-<div align="center">
+- **VirusTotal API v3** engine breakdown — malicious / suspicious / undetected / clean.
+- **AbuseIPDB enrichment** for IPs — confidence score, report counts, last-reported time.
+- **🔄 Reanalyze** straight from the card to force a fresh VirusTotal run.
+- One-click **Copy summary** for ticket-ready notes.
 
-| Single scan | Batch triage |
-|:---:|:---:|
-| <img src="store/screenshot-1-single-scan-1280x800.jpg" alt="Single scan result panel" width="420" /> | <img src="store/screenshot-2-batch-scan-1280x800.jpg" alt="Batch scan with live progress" width="420" /> |
-| **Analytics dashboard** | **On-page IOC badges** |
-| <img src="store/screenshot-3-analytics-1280x800.jpg" alt="Local analytics dashboard" width="420" /> | <img src="store/screenshot-5-page-badges-1280x800.jpg" alt="On-page IOC badges" width="420" /> |
+</td>
+<td width="45%">
 
-</div>
+<img src="store/screenshot-1-single-scan-1280x800.jpg" alt="Single scan result panel showing VirusTotal and AbuseIPDB verdicts" width="100%" />
 
-<details>
-<summary><b>More — scan presets (Quick → Analyst)</b></summary>
+</td>
+</tr>
+</table>
 
-<br />
+### 📦 Triage a whole batch at once
 
-<div align="center">
+<table>
+<tr>
+<td width="45%">
 
-<img src="store/screenshot-4-scan-presets-1280x800.jpg" alt="Scan preset depth control" width="850" />
+<img src="store/screenshot-2-batch-scan-1280x800.jpg" alt="Batch scan resolving indicators live with malicious/suspicious/clean labels" width="100%" />
 
-</div>
+</td>
+<td width="55%">
 
-</details>
+Paste **hundreds of indicators** — one per line — and watch them resolve live. The queue is **rate-limit aware**, so you stay within VirusTotal / AbuseIPDB quotas while every line gets a clear **malicious / suspicious / clean** label.
+
+- Mixed IPs, domains, URLs, and hashes in the same batch.
+- Live progress counter and per-row status (`PENDING` → verdict).
+- Export results to CSV for incident logs.
+
+</td>
+</tr>
+</table>
+
+### 🏷️ IOC badges, right on the page
+
+<table>
+<tr>
+<td width="55%">
+
+On-page detection highlights **IPs, domains, URLs, and hashes** as you browse HTTPS pages. Hover any badge for an instant reputation summary — no copy-paste, no tab switching.
+
+- Auto-detects indicators in page text as you read.
+- Inline hover panel with the same VT + AbuseIPDB summary.
+- Toggle the whole feature off in Settings when you don't need it.
+
+</td>
+<td width="45%">
+
+<img src="store/screenshot-5-page-badges-1280x800.jpg" alt="On-page IOC badges with inline reputation summary" width="100%" />
+
+</td>
+</tr>
+</table>
+
+### 📊 Know your threat landscape
+
+<table>
+<tr>
+<td width="45%">
+
+<img src="store/screenshot-3-analytics-1280x800.jpg" alt="Local analytics dashboard with activity, threat distribution, and IoC breakdown" width="100%" />
+
+</td>
+<td width="55%">
+
+A **local-only** dashboard turns your scan history into insight — nothing leaves the browser.
+
+- Totals for scans, malicious, and suspicious hits.
+- **14-day activity** volume chart.
+- Threat distribution (malicious / suspicious / clean) and a breakdown by IoC type.
+- Latest-batch summary at a glance.
+
+</td>
+</tr>
+</table>
+
+### ⚙️ Tune the depth: Quick → Analyst
+
+<table>
+<tr>
+<td width="55%">
+
+Three presets control how deep each scan goes, balancing detail against API quota:
+
+- **Quick** — report only, no extra VT relationship or MITRE calls.
+- **Detailed** — full pivots (related IoCs, communicating files) plus file MITRE.
+- **Analyst** — Detailed depth with extended AV labels and wider AbuseIPDB report/overview windows.
+
+Checkboxes let you override individual pivots, threat labels, and AbuseIPDB lookback windows.
+
+</td>
+<td width="45%">
+
+<img src="store/screenshot-4-scan-presets-1280x800.jpg" alt="Scan preset depth control from Quick to Analyst" width="100%" />
+
+</td>
+</tr>
+</table>
+
+> [!TIP]
+> The UI is fully **bilingual (English / Turkish)** — switch languages from the header at any time.
 
 ---
 

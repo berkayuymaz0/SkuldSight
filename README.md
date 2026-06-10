@@ -44,10 +44,6 @@ Scan IPs, domains, URLs and file hashes via VirusTotal and AbuseIPDB, run batch 
 
 ### 🔍 Every IoC's verdict in seconds
 
-<table>
-<tr>
-<td width="55%">
-
 Look up any **IP, domain, URL, or file hash** from the popup or side panel and get the full picture in a single result card: reputation score, per-engine VirusTotal detections, and network intel (ASN, owner, country, last analysis).
 
 - **VirusTotal API v3** engine breakdown — malicious / suspicious / undetected / clean.
@@ -55,25 +51,11 @@ Look up any **IP, domain, URL, or file hash** from the popup or side panel and g
 - **🔄 Reanalyze** straight from the card to force a fresh VirusTotal run.
 - One-click **Copy summary** for ticket-ready notes.
 
-</td>
-<td width="45%">
-
-<img src="store/screenshot-1-single-scan-1280x800.jpg" alt="Single scan result panel showing VirusTotal and AbuseIPDB verdicts" width="100%" />
-
-</td>
-</tr>
-</table>
+<div align="center">
+  <img src="store/screenshot-1-single-scan-1280x800.jpg" alt="Single scan result panel showing VirusTotal and AbuseIPDB verdicts" width="760" />
+</div>
 
 ### 📦 Triage a whole batch at once
-
-<table>
-<tr>
-<td width="45%">
-
-<img src="store/screenshot-2-batch-scan-1280x800.jpg" alt="Batch scan resolving indicators live with malicious/suspicious/clean labels" width="100%" />
-
-</td>
-<td width="55%">
 
 Paste **hundreds of indicators** — one per line — and watch them resolve live. The queue is **rate-limit aware**, so you stay within VirusTotal / AbuseIPDB quotas while every line gets a clear **malicious / suspicious / clean** label.
 
@@ -81,15 +63,11 @@ Paste **hundreds of indicators** — one per line — and watch them resolve liv
 - Live progress counter and per-row status (`PENDING` → verdict).
 - Export results to CSV for incident logs.
 
-</td>
-</tr>
-</table>
+<div align="center">
+  <img src="store/screenshot-2-batch-scan-1280x800.jpg" alt="Batch scan resolving indicators live with malicious/suspicious/clean labels" width="760" />
+</div>
 
 ### 🏷️ IOC badges, right on the page
-
-<table>
-<tr>
-<td width="55%">
 
 On-page detection highlights **IPs, domains, URLs, and hashes** as you browse HTTPS pages. Hover any badge for an instant reputation summary — no copy-paste, no tab switching.
 
@@ -97,25 +75,11 @@ On-page detection highlights **IPs, domains, URLs, and hashes** as you browse HT
 - Inline hover panel with the same VT + AbuseIPDB summary.
 - Toggle the whole feature off in Settings when you don't need it.
 
-</td>
-<td width="45%">
-
-<img src="store/screenshot-5-page-badges-1280x800.jpg" alt="On-page IOC badges with inline reputation summary" width="100%" />
-
-</td>
-</tr>
-</table>
+<div align="center">
+  <img src="store/screenshot-5-page-badges-1280x800.jpg" alt="On-page IOC badges with inline reputation summary" width="760" />
+</div>
 
 ### 📊 Know your threat landscape
-
-<table>
-<tr>
-<td width="45%">
-
-<img src="store/screenshot-3-analytics-1280x800.jpg" alt="Local analytics dashboard with activity, threat distribution, and IoC breakdown" width="100%" />
-
-</td>
-<td width="55%">
 
 A **local-only** dashboard turns your scan history into insight — nothing leaves the browser.
 
@@ -124,15 +88,11 @@ A **local-only** dashboard turns your scan history into insight — nothing leav
 - Threat distribution (malicious / suspicious / clean) and a breakdown by IoC type.
 - Latest-batch summary at a glance.
 
-</td>
-</tr>
-</table>
+<div align="center">
+  <img src="store/screenshot-3-analytics-1280x800.jpg" alt="Local analytics dashboard with activity, threat distribution, and IoC breakdown" width="760" />
+</div>
 
 ### ⚙️ Tune the depth: Quick → Analyst
-
-<table>
-<tr>
-<td width="55%">
 
 Three presets control how deep each scan goes, balancing detail against API quota:
 
@@ -142,14 +102,9 @@ Three presets control how deep each scan goes, balancing detail against API quot
 
 Checkboxes let you override individual pivots, threat labels, and AbuseIPDB lookback windows.
 
-</td>
-<td width="45%">
-
-<img src="store/screenshot-4-scan-presets-1280x800.jpg" alt="Scan preset depth control from Quick to Analyst" width="100%" />
-
-</td>
-</tr>
-</table>
+<div align="center">
+  <img src="store/screenshot-4-scan-presets-1280x800.jpg" alt="Scan preset depth control from Quick to Analyst" width="760" />
+</div>
 
 > [!TIP]
 > The UI is fully **bilingual (English / Turkish)** — switch languages from the header at any time.
